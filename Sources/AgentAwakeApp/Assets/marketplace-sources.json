@@ -1,0 +1,443 @@
+[
+  {
+    "repository": "anthropics/skills",
+    "root": "skills",
+    "community": false,
+    "packages": [],
+    "repositoryStars": null,
+    "popularityCheckedAt": null
+  },
+  {
+    "repository": "obra/superpowers",
+    "root": "skills",
+    "community": true,
+    "packages": [],
+    "repositoryStars": null,
+    "popularityCheckedAt": null
+  },
+  {
+    "repository": "vercel-labs/agent-skills",
+    "root": "skills",
+    "community": false,
+    "packages": [],
+    "repositoryStars": null,
+    "popularityCheckedAt": null
+  },
+  {
+    "repository": "JuliusBrussee/caveman",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/caveman",
+        "title": "Caveman",
+        "summary": "Uses fewer output tokens by cutting filler from agent replies while keeping technical detail.",
+        "detail": "Aims to reduce output-token use by making agent replies shorter. Lite keeps readable sentences; full and ultra compress prose further. Wenyan variants use terse Classical Chinese. Code, commands, and exact errors stay intact.\n\nUse it when you want less chatter and a smaller conversation. Savings depend on the model and task; shorter replies do not guarantee a lower total bill. This installs the standalone skill, not the proxy, browser extension, or plugin hooks.\n\nInvoke /caveman lite, /caveman full, /caveman ultra, or the documented wenyan variants in Claude Code; use $caveman with the mode in Codex. Say “stop caveman” or “normal mode” to return to normal.",
+        "category": "Coding styles",
+        "featured": true,
+        "featuredPriority": 100,
+        "logoName": "caveman-package-logo"
+      }
+    ],
+    "repositoryStars": 108218,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "DietrichGebert/ponytail",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/ponytail",
+        "title": "Ponytail",
+        "summary": "Prefers existing code, the standard library, and native features over new complexity.",
+        "detail": "Pushes the agent toward the smallest correct solution: reuse existing helpers, check the standard library, prefer native platform features, and avoid speculative abstractions.\n\nUse it when the agent overbuilds. Lite suggests alternatives; ultra challenges unnecessary work. Required validation, security, accessibility, and requested features still matter. The standalone skill does not install the plugin’s session hooks.\n\nInvoke /ponytail lite, /ponytail full, or /ponytail ultra in Claude Code; use $ponytail or ask for ponytail mode in Codex. Say “stop ponytail” to switch it off.",
+        "category": "Coding styles",
+        "featured": true,
+        "featuredPriority": 95
+      },
+      {
+        "path": "skills/ponytail-review",
+        "title": "Ponytail Review",
+        "summary": "Reviews a diff for unnecessary dependencies, abstractions, and custom code.",
+        "detail": "Lists complexity that could be deleted or replaced, with file locations and simpler alternatives.\n\nUse it for a focused simplification review alongside your correctness review.\n\nInvoke /ponytail-review in Claude Code or $ponytail-review in Codex after starting a new session.",
+        "category": "Coding styles",
+        "featured": false
+      },
+      {
+        "path": "skills/ponytail-audit",
+        "title": "Ponytail Audit",
+        "summary": "Finds over-engineering across an entire repository.",
+        "detail": "Ranks opportunities to remove bloat or use existing platform capabilities. Produces a report without applying changes.\n\nUse it before planning a cleanup; findings still need engineering judgement.\n\nInvoke /ponytail-audit in Claude Code or $ponytail-audit in Codex after starting a new session.",
+        "category": "Coding styles",
+        "featured": false
+      },
+      {
+        "path": "skills/ponytail-debt",
+        "title": "Ponytail Debt",
+        "summary": "Collects deliberate ponytail shortcuts into a debt ledger.",
+        "detail": "Finds ponytail: comments and reports their limits and upgrade triggers.\n\nUse it to revisit recorded shortcuts; unmarked debt is outside this report.\n\nInvoke /ponytail-debt in Claude Code or $ponytail-debt in Codex after starting a new session.",
+        "category": "Coding styles",
+        "featured": false
+      },
+      {
+        "path": "skills/ponytail-help",
+        "title": "Ponytail Help",
+        "summary": "Explains Ponytail modes and companion commands.",
+        "detail": "Displays a quick reference without changing the active coding mode.\n\nUse it to choose a Ponytail command.\n\nInvoke /ponytail-help in Claude Code or $ponytail-help in Codex after starting a new session.",
+        "category": "Coding styles",
+        "featured": false
+      },
+      {
+        "path": "skills/ponytail-gain",
+        "title": "Ponytail Gain",
+        "summary": "Displays the author’s published benchmark results.",
+        "detail": "Shows upstream benchmark medians rather than measuring your repository or session.\n\nUse it to inspect the project’s claims; results depend on tasks and models and are not promised savings.\n\nInvoke /ponytail-gain in Claude Code or $ponytail-gain in Codex after starting a new session.",
+        "category": "Coding styles",
+        "featured": false
+      }
+    ],
+    "repositoryStars": 147573,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "multica-ai/andrej-karpathy-skills",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/karpathy-guidelines",
+        "title": "Karpathy Guidelines",
+        "summary": "Encourages explicit assumptions, small changes, and verifiable results.",
+        "detail": "Guides coding through four principles: understand before changing, keep solutions simple, limit edits to the task, and verify success. Inspired by Karpathy’s observations; maintained by this community project.\n\nUse it for a general coding discipline rather than a full project process.\n\nInvoke /karpathy-guidelines in Claude Code or $karpathy-guidelines in Codex after starting a new session.",
+        "category": "Coding styles",
+        "featured": true,
+        "featuredPriority": 90
+      }
+    ],
+    "repositoryStars": 215712,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "mattpocock/skills",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/engineering/setup-matt-pocock-skills",
+        "title": "Matt Pocock Setup",
+        "summary": "Configures project conventions used by Matt Pocock’s engineering workflows.",
+        "detail": "Records the issue tracker, domain documentation, and triage vocabulary for the project.\n\nUse it once per project before workflows that expect this configuration. Invoking it can edit project guidance files; installation alone does not configure the project.\n\nInvoke /setup-matt-pocock-skills in Claude Code or $setup-matt-pocock-skills in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/productivity/grilling",
+        "title": "Grilling",
+        "summary": "Asks focused questions to sharpen an unclear plan.",
+        "detail": "Runs an interview to expose assumptions and unresolved decisions.\n\nUse it before implementation when the brief needs refinement.\n\nInvoke /grilling in Claude Code or $grilling in Codex after starting a new session.",
+        "category": "Productivity",
+        "featured": false
+      },
+      {
+        "path": "skills/productivity/grill-me",
+        "title": "Grill Me",
+        "summary": "Interviews you to challenge and refine your idea.",
+        "detail": "A user-facing entry point into the grilling workflow.\n\nUse it to think through a proposal. Also install Grilling from this publisher.\n\nInvoke /grill-me in Claude Code or $grill-me in Codex after starting a new session.",
+        "category": "Productivity",
+        "featured": true
+      },
+      {
+        "path": "skills/engineering/domain-modeling",
+        "title": "Domain Modeling",
+        "summary": "Builds shared project terminology and decision records.",
+        "detail": "Develops a domain glossary and architecture decisions so the agent uses the same concepts as the project.\n\nUse it when inconsistent naming and context cause misunderstandings.\n\nInvoke /domain-modeling in Claude Code or $domain-modeling in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/engineering/grill-with-docs",
+        "title": "Grill With Docs",
+        "summary": "Refines your plan while documenting terminology and decisions.",
+        "detail": "Combines an interview with domain documentation.\n\nUse it before a substantial change. Also install Grilling, Domain Modeling, and Matt Pocock Setup from this publisher.\n\nInvoke /grill-with-docs in Claude Code or $grill-with-docs in Codex after starting a new session.",
+        "category": "Productivity",
+        "featured": false
+      },
+      {
+        "path": "skills/engineering/tdd",
+        "title": "Matt Pocock TDD",
+        "summary": "Builds features through tests of observable behaviour.",
+        "detail": "Uses repeated failing-test, implementation, and refactoring cycles through public interfaces.\n\nUse it for test-first features and fixes; avoid tests tied to private implementation.\n\nInvoke /tdd in Claude Code or $tdd in Codex after starting a new session.",
+        "category": "Testing",
+        "featured": true
+      },
+      {
+        "path": "skills/engineering/codebase-design",
+        "title": "Codebase Design",
+        "summary": "Provides a vocabulary for module boundaries and maintainable interfaces.",
+        "detail": "Evaluates architecture through interface depth, locality, and testability.\n\nUse it when discussing design or preparing related architecture workflows.\n\nInvoke /codebase-design in Claude Code or $codebase-design in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/engineering/code-review",
+        "title": "Matt Pocock Code Review",
+        "summary": "Checks a diff against repository standards and the intended specification.",
+        "detail": "Reviews changes from a supplied commit, branch, or tag using separate standards and specification passes.\n\nUse it after a change is ready. Run Matt Pocock Setup first; its workflow requests subagents, so host support affects execution.\n\nInvoke /code-review in Claude Code or $code-review in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/engineering/diagnosing-bugs",
+        "title": "Diagnosing Bugs",
+        "summary": "Creates a repeatable failure signal before searching for the cause.",
+        "detail": "Investigates difficult bugs and regressions through a tight feedback loop and tested hypotheses.\n\nUse it when a fix needs more evidence than a plausible guess.\n\nInvoke /diagnosing-bugs in Claude Code or $diagnosing-bugs in Codex after starting a new session.",
+        "category": "Testing",
+        "featured": false
+      }
+    ],
+    "repositoryStars": 271359,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "Leonxlnx/taste-skill",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/taste-skill",
+        "title": "Taste Skill",
+        "summary": "Gives landing pages and portfolios a deliberate visual direction.",
+        "detail": "Reads the brief, chooses design guidance that fits, and checks the result for generic patterns.\n\nUse it for expressive frontend work. The upstream skill targets landing pages, portfolios, and redesigns; it is opinionated and should be adapted to your brand.\n\nInvoke /design-taste-frontend in Claude Code or $design-taste-frontend in Codex after starting a new session.",
+        "category": "Design",
+        "featured": true
+      },
+      {
+        "path": "skills/redesign-skill",
+        "title": "Redesign Existing Projects",
+        "summary": "Audits an existing interface and applies targeted visual improvements.",
+        "detail": "Checks typography, spacing, layout, and generic design patterns before changing the current implementation.\n\nUse it to improve an existing app with its current styling stack.\n\nInvoke /redesign-existing-projects in Claude Code or $redesign-existing-projects in Codex after starting a new session.",
+        "category": "Design",
+        "featured": false
+      },
+      {
+        "path": "skills/minimalist-skill",
+        "title": "Minimalist UI",
+        "summary": "Directs the agent toward warm, flat, editorial interfaces.",
+        "detail": "Uses typographic contrast, restrained colours, and generous spacing.\n\nUse it when that aesthetic fits the product; its restrictive font and icon preferences need judgement.\n\nInvoke /minimalist-ui in Claude Code or $minimalist-ui in Codex after starting a new session.",
+        "category": "Design",
+        "featured": false
+      }
+    ],
+    "repositoryStars": 90939,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "OthmanAdi/planning-with-files",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/planning-with-files",
+        "title": "Planning With Files",
+        "summary": "Keeps plans, findings, and progress in persistent Markdown files.",
+        "detail": "Maintains working notes on disk for complex tasks and recovery after context resets.\n\nUse it for long work. Includes helper scripts and Claude lifecycle hooks; Codex uses the instructions and scripts without equivalent automatic hook behaviour. Installation stores these files without executing them.\n\nInvoke /planning-with-files in Claude Code or $planning-with-files in Codex after starting a new session.",
+        "category": "Productivity",
+        "featured": true
+      }
+    ],
+    "repositoryStars": 27169,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "addyosmani/agent-skills",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/code-simplification",
+        "title": "Code Simplification",
+        "summary": "Makes working code easier to understand while preserving behaviour.",
+        "detail": "Removes unnecessary complexity with readability and verification as the constraints.\n\nUse it after the feature works; fewer lines alone are not the goal.\n\nInvoke /code-simplification in Claude Code or $code-simplification in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/code-review-and-quality",
+        "title": "Code Review And Quality",
+        "summary": "Reviews correctness, maintainability, and coding quality.",
+        "detail": "Provides a structured engineering review of proposed changes.\n\nUse it before merging or handing off a change.\n\nInvoke /code-review-and-quality in Claude Code or $code-review-and-quality in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/source-driven-development",
+        "title": "Source Driven Development",
+        "summary": "Checks implementation decisions against current official documentation.",
+        "detail": "Asks the agent to verify framework-specific choices and cite authoritative sources.\n\nUse it when APIs or recommended patterns may have changed. Requires documentation access.\n\nInvoke /source-driven-development in Claude Code or $source-driven-development in Codex after starting a new session.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/security-and-hardening",
+        "title": "Security And Hardening",
+        "summary": "Reviews trust boundaries and strengthens application security.",
+        "detail": "Guides handling of input, authentication, stored data, and external integrations.\n\nUse it when a change crosses a security boundary; it supports review rather than guaranteeing security.\n\nInvoke /security-and-hardening in Claude Code or $security-and-hardening in Codex after starting a new session.",
+        "category": "Security",
+        "featured": false
+      }
+    ],
+    "repositoryStars": 99708,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "pbakaus/impeccable",
+    "root": "skills",
+    "community": true,
+    "packages": [
+      {
+        "path": "plugin/skills/impeccable",
+        "title": "Impeccable",
+        "summary": "Shapes, critiques, and polishes frontend interfaces.",
+        "detail": "Covers visual hierarchy, typography, colour, responsive behaviour, accessibility, and interface states.\n\nUse it for design review or focused UI improvements. Installs the skill and its references rather than the whole plugin.\n\nInvoke /impeccable in Claude Code or $impeccable in Codex after starting a new session.",
+        "category": "Design",
+        "featured": true
+      }
+    ],
+    "repositoryStars": 72137,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "blader/humanizer",
+    "root": "",
+    "community": true,
+    "packages": [
+      {
+        "path": "",
+        "title": "Humanizer",
+        "summary": "Rewrites AI-sounding prose into natural writing while preserving your meaning.",
+        "detail": "Removes common AI writing patterns such as inflated claims, stock phrases, forced contrasts, and repetitive formatting.\n\nUse it to edit articles, emails, or other prose. The original meaning and facts should stay intact; it is an editing skill, not an AI detector or a guarantee about detection tools. No separate runtime is required.\n\nInvoke /humanizer in Claude Code or $humanizer in Codex, followed by the text you want edited.",
+        "category": "Productivity",
+        "featured": true
+      }
+    ],
+    "repositoryStars": 52681,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "root": "",
+    "community": true,
+    "packages": [
+      {
+        "path": ".claude/skills/ui-ux-pro-max",
+        "title": "UI/UX Pro Max",
+        "summary": "Builds polished interfaces using searchable styles, palettes, fonts, and UX guidelines.",
+        "detail": "Provides a local design database and search scripts for web, mobile, and desktop interfaces, including SwiftUI. Covers design direction, typography, color, accessibility, and stack-specific implementation.\n\nUse it when designing or improving an interface. Requires Python 3 to search the included data. SkillHanger installs the complete skill folder with scripts, references, and data, without executing them.\n\nInvoke /ui-ux-pro-max in Claude Code or $ui-ux-pro-max in Codex with your interface brief.",
+        "category": "Design",
+        "featured": true
+      }
+    ],
+    "repositoryStars": 131290,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "vercel-labs/agent-browser",
+    "root": "",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/agent-browser",
+        "title": "Agent Browser",
+        "summary": "Lets your agent navigate websites, fill forms, take screenshots, and test web apps.",
+        "detail": "Connects the agent to Vercel’s browser automation CLI for browsing and testing. The skill is a discovery stub that loads current workflows from the installed CLI.\n\nUse it for website interaction and browser QA. Requires the agent-browser CLI and a supported browser installed separately; installing this skill alone does not install either. Review its upstream setup instructions.\n\nInvoke /agent-browser in Claude Code or $agent-browser in Codex and describe the browser task.",
+        "category": "Testing",
+        "featured": true
+      }
+    ],
+    "repositoryStars": 43322,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "kepano/obsidian-skills",
+    "root": "",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/obsidian-markdown",
+        "title": "Obsidian Markdown",
+        "summary": "Creates notes with Obsidian wikilinks, callouts, embeds, and properties.",
+        "detail": "Guides editing Obsidian-flavored Markdown while preserving valid note syntax.\n\nUse it for notes and linked knowledge bases. File editing needs access to your vault; the skill does not connect an account or sync your notes.\n\nInvoke /obsidian-markdown in Claude Code or $obsidian-markdown in Codex with your note task.",
+        "category": "Productivity",
+        "featured": true
+      },
+      {
+        "path": "skills/obsidian-cli",
+        "title": "Obsidian CLI",
+        "summary": "Reads, searches, and manages an Obsidian vault through its native CLI.",
+        "detail": "Uses the Obsidian CLI to work with notes, tasks, properties, plugins, and themes.\n\nUse it for vault automation. Requires a running Obsidian app and its command-line interface enabled; installation alone does not enable the CLI.\n\nInvoke /obsidian-cli in Claude Code or $obsidian-cli in Codex with your vault task.",
+        "category": "Productivity",
+        "featured": false
+      },
+      {
+        "path": "skills/json-canvas",
+        "title": "JSON Canvas",
+        "summary": "Builds visual mind maps with nodes, groups, and connections.",
+        "detail": "Creates valid .canvas files using the open JSON Canvas format.\n\nUse it for diagrams or visual notes in Obsidian and compatible viewers. No separate runtime is required to generate the files.\n\nInvoke /json-canvas in Claude Code or $json-canvas in Codex with your map or diagram brief.",
+        "category": "Design",
+        "featured": false
+      },
+      {
+        "path": "skills/obsidian-bases",
+        "title": "Obsidian Bases",
+        "summary": "Creates database-style views of notes with filters, formulas, and summaries.",
+        "detail": "Builds valid .base files with table and card views.\n\nUse it to organize an Obsidian vault by properties. Viewing these files needs an Obsidian version that supports Bases.\n\nInvoke /obsidian-bases in Claude Code or $obsidian-bases in Codex with your desired note view.",
+        "category": "Productivity",
+        "featured": false
+      },
+      {
+        "path": "skills/defuddle",
+        "title": "Defuddle",
+        "summary": "Reduces web-page clutter and token use by extracting readable Markdown.",
+        "detail": "Strips navigation, ads, and other page clutter before the agent processes a web page.\n\nUse it for articles and documentation. Requires the separate Defuddle CLI; installing the skill does not install that tool. Token savings depend on the page.\n\nInvoke /defuddle in Claude Code or $defuddle in Codex with the page URL.",
+        "category": "Productivity",
+        "featured": false
+      }
+    ],
+    "repositoryStars": 48988,
+    "popularityCheckedAt": "2026-09-28"
+  },
+  {
+    "repository": "muratcankoylan/Agent-Skills-for-Context-Engineering",
+    "root": "",
+    "community": true,
+    "packages": [
+      {
+        "path": "skills/context-compression",
+        "title": "Context Compression",
+        "summary": "Keeps long agent sessions focused with useful summaries and durable handoffs.",
+        "detail": "Structures summaries to preserve decisions, affected files, risks, and next actions across long sessions.\n\nUse it when work exceeds the agent’s context window. It guides the agent; it does not change the provider’s context limit or guarantee token savings.\n\nInvoke /context-compression in Claude Code or $context-compression in Codex with your session or handoff goal.",
+        "category": "Development",
+        "featured": true
+      },
+      {
+        "path": "skills/context-optimization",
+        "title": "Context Optimization",
+        "summary": "Cuts avoidable context use through focused retrieval, masking, and budgeting.",
+        "detail": "Explains how to reduce irrelevant context while retaining useful information.\n\nUse it when building or tuning agent systems. Applying cache or retrieval changes requires implementation in your system; installation does not alter your provider.\n\nInvoke /context-optimization in Claude Code or $context-optimization in Codex with your agent design.",
+        "category": "Development",
+        "featured": false
+      },
+      {
+        "path": "skills/filesystem-context",
+        "title": "Filesystem Context",
+        "summary": "Uses files as durable working memory for long agent tasks.",
+        "detail": "Offloads notes and tool output into files and retrieves them when needed.\n\nUse it for multi-step work and context recovery. The agent needs access to the chosen working directory; installation does not create memory files automatically.\n\nInvoke /filesystem-context in Claude Code or $filesystem-context in Codex with your long-running task.",
+        "category": "Development",
+        "featured": false
+      }
+    ],
+    "repositoryStars": 18043,
+    "popularityCheckedAt": "2026-09-28"
+  }
+]

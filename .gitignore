@@ -1,0 +1,49 @@
+# Generated Swift builds and packaged applications
+.build/
+.swiftpm/
+dist/
+
+# Generated previews, logs, and research downloads
+tasks/evidence/*
+!tasks/evidence/marketplace/
+tasks/evidence/marketplace/*
+!tasks/evidence/marketplace/catalog-provenance.json
+!tasks/evidence/marketplace-expansion/
+tasks/evidence/marketplace-expansion/*
+!tasks/evidence/marketplace-expansion/package-logo-provenance.json
+
+# Local editor, OS, and Python files
+.DS_Store
+__pycache__/
+*.py[cod]
+.vscode/
+.idea/
+
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+
+# Local agent/editor configuration and development instructions
+.codex/
+.claude/
+.cursor/
+.cursorrules
+.cursorignore
+.github/copilot-instructions.md
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+HANDOFF.md
+SPEC.md
+*.md
+!README.md
+!Resources/ClosedLidSetup.md
+tasks/*
+!tasks/evidence/
+
+# Local keys and credentials
+*.pem
+*.key
+*.p12
+*.pfx

@@ -1,0 +1,662 @@
+[
+  {
+    "itemID": "codex:openai-curated:linear",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/linear/assets/logo.png",
+    "asset": "catalog-4eb2f39031ee7db40b82.png",
+    "bytes": 19496,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:atlassian-rovo",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/atlassian-rovo/assets/logo.png",
+    "asset": "catalog-a6681ecc99608b3c5f00.png",
+    "bytes": 7690,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:google-calendar",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/google-calendar/assets/logo.png",
+    "asset": "catalog-8c7607ddc2f6c94fd8f2.png",
+    "bytes": 44459,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:gmail",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/gmail/assets/gmail.png",
+    "asset": "catalog-96309f23b2d79fa60c56.png",
+    "bytes": 41731,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:slack",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/slack/assets/logo.png",
+    "asset": "catalog-e7a3b46ba1ab6b4acfec.png",
+    "bytes": 23428,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:teams",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/teams/assets/logo.png",
+    "asset": "catalog-ca3a75216fd90cf0400d.png",
+    "bytes": 19035,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:sharepoint",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/sharepoint/assets/logo.png",
+    "asset": "catalog-d49ff34310a54684677e.png",
+    "bytes": 21442,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:outlook-email",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/outlook-email/assets/logo.png",
+    "asset": "catalog-fa380a81e9404ec125a6.png",
+    "bytes": 23322,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:outlook-calendar",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/outlook-calendar/assets/logo.png",
+    "asset": "catalog-52629bd9d8e43952a5f6.png",
+    "bytes": 23322,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:canva",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/canva/assets/logo.png",
+    "asset": "catalog-b41d45b597c18528b247.png",
+    "bytes": 44919,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:figma",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/figma/assets/logo-padded.png",
+    "asset": "catalog-7a2c85dc5dd5255cac43.png",
+    "bytes": 18308,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:stripe",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/stripe/assets/logo.png",
+    "asset": "catalog-9386575c37b106d76f3a.png",
+    "bytes": 2370,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:vercel",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/vercel/assets/logo.png",
+    "asset": "catalog-a5452fc9dffdc003867e.png",
+    "bytes": 2254,
+    "pixels": [
+      192,
+      192
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:game-studio",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/game-studio/assets/app-icon.png",
+    "asset": "catalog-1f1d90d88a186a872841.png",
+    "bytes": 8885,
+    "pixels": [
+      400,
+      400
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:superpowers",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/superpowers/.codex-plugin/assets/logo.png",
+    "asset": "catalog-cac764fc1f1ba46d1e5e.png",
+    "bytes": 48231,
+    "pixels": [
+      2134,
+      2134
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:github",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/github/assets/github.png",
+    "asset": "catalog-789f07fa7696d38d0290.png",
+    "bytes": 9380,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:circleci",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/circleci/assets/logo.png",
+    "asset": "catalog-b6690c3df3643ac07033.png",
+    "bytes": 10488,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:google-drive",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/google-drive/assets/logo.png",
+    "asset": "catalog-22ae0f4d9ae381d8e7ab.png",
+    "bytes": 56020,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:notion",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/notion/assets/notion.png",
+    "asset": "catalog-1cc4ff06a7a80fe84737.png",
+    "bytes": 3581,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:cloudflare",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/cloudflare/assets/cloudflare.png",
+    "asset": "catalog-516303fd04b5f4d6087e.png",
+    "bytes": 1187,
+    "pixels": [
+      100,
+      100
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:sentry",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/sentry/assets/sentry.png",
+    "asset": "catalog-8ad7740b983b3fc067cf.png",
+    "bytes": 1998,
+    "pixels": [
+      100,
+      100
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:build-ios-apps",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/build-ios-apps/assets/app-icon.png",
+    "asset": "catalog-b06f68a264ecbc3eeddf.png",
+    "bytes": 4722,
+    "pixels": [
+      400,
+      400
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:build-macos-apps",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/build-macos-apps/assets/app-icon.png",
+    "asset": "catalog-83ee9f2ee1a1e4762412.png",
+    "bytes": 4722,
+    "pixels": [
+      400,
+      400
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:build-web-apps",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/build-web-apps/assets/app-icon.png",
+    "asset": "catalog-73ab1cc358d0cc8a2299.png",
+    "bytes": 4049,
+    "pixels": [
+      400,
+      400
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:test-android-apps",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/test-android-apps/assets/app-icon.png",
+    "asset": "catalog-b1ea651c23bbb4469e74.png",
+    "bytes": 79014,
+    "pixels": [
+      424,
+      424
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:life-science-research",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/life-science-research/assets/app-icon.png",
+    "asset": "catalog-99fd1f1a41990cf88624.png",
+    "bytes": 17108,
+    "pixels": [
+      1024,
+      1024
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:zotero",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/zotero/assets/icon.png",
+    "asset": "catalog-2548d2c498208409f382.png",
+    "bytes": 9908,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:expo",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/expo/assets/expo.png",
+    "asset": "catalog-f09e91048f93d8aa423b.png",
+    "bytes": 10299,
+    "pixels": [
+      2048,
+      2048
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:coderabbit",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/coderabbit/assets/logo.png",
+    "asset": "catalog-1de212d56540840caf94.png",
+    "bytes": 32140,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:remotion",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/remotion/.codex-plugin/assets/logo.png",
+    "asset": "catalog-4285f9160b07e3b4dced.png",
+    "bytes": 37249,
+    "pixels": [
+      1186,
+      1186
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:granola",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/granola/assets/logo.png",
+    "asset": "catalog-3124c2d989a05d3a5db8.png",
+    "bytes": 18723,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:monday-com",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/monday-com/assets/logo.png",
+    "asset": "catalog-c03c459c9b2548dc3313.png",
+    "bytes": 8185,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:hyperframes",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/hyperframes/assets/logo.png",
+    "asset": "catalog-6e648650d1554946fd18.png",
+    "bytes": 60586,
+    "pixels": [
+      1024,
+      1024
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:supabase",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/supabase/assets/logo.png",
+    "asset": "catalog-eb3f526591bc8546528d.png",
+    "bytes": 8859,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:codex-security",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/codex-security/assets/logo.png",
+    "asset": "catalog-fa739e46f914fd601d5c.png",
+    "bytes": 99567,
+    "pixels": [
+      360,
+      360
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:openai-developers",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/openai-developers/assets/logo.png",
+    "asset": "catalog-2c1673beafe5c6d993eb.png",
+    "bytes": 2699,
+    "pixels": [
+      127,
+      127
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:datadog",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/datadog/assets/logo.png",
+    "asset": "catalog-6cd743613ffed7ad7119.png",
+    "bytes": 25836,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:mixpanel-headless",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/mixpanel-headless/assets/logo.png",
+    "asset": "catalog-88c8648eeca61983aa50.png",
+    "bytes": 10093,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:airtable",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/airtable/assets/logo.png",
+    "asset": "catalog-8be7bfd0a34af412710c.png",
+    "bytes": 7292,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:nvidia",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/nvidia/assets/nvidia.png",
+    "asset": "catalog-1f46de4e46923e09b20b.png",
+    "bytes": 43889,
+    "pixels": [
+      512,
+      428
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:posthog",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/posthog/assets/logo.png",
+    "asset": "catalog-3191d44ae1acfc9f3bbf.png",
+    "bytes": 13481,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:ngs-analysis",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/ngs-analysis/assets/app-icon.png",
+    "asset": "catalog-ca3f385b690b9eddd0a6.png",
+    "bytes": 39140,
+    "pixels": [
+      360,
+      360
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:shopify",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/shopify/assets/logo.png",
+    "asset": "catalog-dabea2fe4d754ae5ecb8.png",
+    "bytes": 17979,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:magicpath",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/magicpath/assets/magicpath.png",
+    "asset": "catalog-76b57fcba68e5ed5897f.png",
+    "bytes": 20296,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:boltz-api-cli",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/boltz-api-cli/assets/app-icon.png",
+    "asset": "catalog-6044ce3fa0fa93acf7ad.png",
+    "bytes": 19604,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:dropbox",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/dropbox/assets/logo.png",
+    "asset": "catalog-3fb5a47326e623f0fc2f.png",
+    "bytes": 10621,
+    "pixels": [
+      256,
+      256
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:product-design",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/product-design/assets/logo.png",
+    "asset": "catalog-74e7057d57a3a68b73a8.png",
+    "bytes": 121628,
+    "pixels": [
+      360,
+      360
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:data-analytics",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/data-analytics/assets/datascience.png",
+    "asset": "catalog-a6c4a0266e21cde535e2.png",
+    "bytes": 96096,
+    "pixels": [
+      360,
+      360
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:creative-production",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/creative-production/assets/logo.png",
+    "asset": "catalog-22023a02c94fc7bc6c56.png",
+    "bytes": 133263,
+    "pixels": [
+      360,
+      360
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:public-equity-investing",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/public-equity-investing/assets/logo.png",
+    "asset": "catalog-2c7e3c044f14bf6bdc1a.png",
+    "bytes": 112798,
+    "pixels": [
+      360,
+      360
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:clickup",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/clickup/assets/logo.png",
+    "asset": "catalog-0b90640b868a52787fea.png",
+    "bytes": 34700,
+    "pixels": [
+      1024,
+      1024
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:chatcut",
+    "repository": "openai/plugins",
+    "revision": "5fd93af4cd0c623e020d0cc7e9ce178b4ac1f70f",
+    "path": "plugins/chatcut/.codex-plugin/assets/logo.png",
+    "asset": "catalog-30601e2bf8147ad563c6.png",
+    "bytes": 57172,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:crowdstrike-falcon-foundry",
+    "repository": "CrowdStrike/foundry-skills",
+    "revision": "HEAD",
+    "path": "assets/crowdstrike-logo.png",
+    "asset": "catalog-7e2a4bb0586e429cb06f.png",
+    "bytes": 10229,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:crowdstrike-falcon-fusion",
+    "repository": "CrowdStrike/fusion-skills",
+    "revision": "HEAD",
+    "path": "assets/crowdstrike-logo.png",
+    "asset": "catalog-4a1b42ab637089907096.png",
+    "bytes": 10229,
+    "pixels": [
+      512,
+      512
+    ]
+  },
+  {
+    "itemID": "codex:openai-curated:qodo",
+    "repository": "qodo-ai/qodo-skills",
+    "revision": "HEAD",
+    "path": "codex-packages/qodo/assets/qodo.png",
+    "asset": "catalog-b5319f774a14f002f322.png",
+    "bytes": 22550,
+    "pixels": [
+      300,
+      300
+    ]
+  }
+]
