@@ -22,7 +22,8 @@ if compat_binary.exists() or compat_binary.is_symlink():
 compat_binary.symlink_to("SkillHanger")
 shutil.copy2(root / "Resources/Info.plist", app / "Contents/Info.plist")
 shutil.copy2(root / "Resources/ClosedLidSetup.md", resources)
-shutil.copy2(root / "README.md", resources / "Readme.md")
+(resources / "Readme.md").write_text((root / "README.md").read_text().replace("Resources/ClosedLidSetup.md", "ClosedLidSetup.md"))
+shutil.copytree(root / "docs/images", resources / "docs/images")
 shutil.copytree(binary_dir / "SkillHanger_AgentAwakeApp.bundle", resources / "SkillHanger_AgentAwakeApp.bundle")
 iconset = dist / "AppIcon.iconset"
 subprocess.run(["swift", str(root / "scripts/make-icon.swift"), str(iconset),

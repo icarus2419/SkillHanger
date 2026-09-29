@@ -32,6 +32,7 @@ final class UsageStore: ObservableObject {
     private let fetchUsage: FetchUsage
     private let logRoot: URL?
     private let session: URLSession
+    private let workspaceNotifications: NotificationCenter
     private var ticker: Timer?
     private var lastFetch: [Provider: Date] = [:]
     private var retryAt: [Provider: Date] = [:]
@@ -51,6 +52,7 @@ final class UsageStore: ObservableObject {
     private static let cacheKey = "usageCache.v1"
 
     init(prefs: Prefs, defaults: UserDefaults = .standard, logRoot: URL? = nil,
+         workspaceNotifications: NotificationCenter = NSWorkspace.shared.notificationCenter,
          initialUsage: [ProviderUsage] = [],
          initialErrors: [Provider: UsageError] = [:], initialLoading: Set<Provider> = [],
          fetchUsage: @escaping FetchUsage = { provider, session in
@@ -62,6 +64,7 @@ final class UsageStore: ObservableObject {
         self.prefs = prefs
         self.defaults = defaults
         self.logRoot = logRoot
+        self.workspaceNotifications = workspaceNotifications
         self.logReader = CodexLocalLog.Reader(root: logRoot)
         self.fetchUsage = fetchUsage
         let config = URLSessionConfiguration.ephemeral
@@ -89,7 +92,7 @@ final class UsageStore: ObservableObject {
         RunLoop.main.add(timer, forMode: .common)
         ticker = timer
 
-        let center = NSWorkspace.shared.notificationCenter
+        let center = workspaceNotifications
         for (sleep, wake, reason) in [
             (NSWorkspace.willSleepNotification, NSWorkspace.didWakeNotification, "system"),
             (NSWorkspace.screensDidSleepNotification, NSWorkspace.screensDidWakeNotification, "display")
@@ -136,7 +139,7 @@ final class UsageStore: ObservableObject {
         ticker = nil
         logWatcher.stop()
         tasks.values.forEach { $0.cancel() }
-        observers.forEach { NSWorkspace.shared.notificationCenter.removeObserver($0) }
+        observers.forEach { workspaceNotifications.removeObserver($0) }
         observers.removeAll()
         cancellables.removeAll()
     }

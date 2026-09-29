@@ -2,16 +2,42 @@ import AppKit
 import SwiftUI
 import UsageCore
 
+@MainActor
 struct UnifiedMenuLabel: View {
-    @ObservedObject var runtime: AppRuntime
-    var body: some View {
-        Group {
-            if runtime.prefs.providers.isEmpty {
+    @ObservedObject var usage: UsageStore
+    @ObservedObject var prefs: Prefs
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.displayScale) private var displayScale
+
+    init(runtime: AppRuntime) {
+        usage = runtime.usage
+        prefs = runtime.prefs
+    }
+
+    var body: Image {
+        Image(nsImage: renderedImage(colorScheme: colorScheme, scale: displayScale))
+            .renderingMode(.original)
+    }
+
+    func renderedImage(colorScheme: ColorScheme, scale: CGFloat) -> NSImage {
+        let readings = prefs.providers.map { usage.reading(for: $0) }
+        let content = Group {
+            if readings.isEmpty {
                 BrandMark(size: 18)
             } else {
-                MenuBarLabel(readings: runtime.prefs.providers.map { runtime.usage.reading(for: $0) })
+                MenuBarLabel(readings: readings)
             }
-        }.accessibilityLabel("UsageBar plan limits")
+        }
+        .environment(\.colorScheme, colorScheme)
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = scale
+        let image = renderer.nsImage ?? NSImage(size: NSSize(width: 18, height: 18))
+        image.isTemplate = false
+        image.accessibilityDescription = readings.isEmpty ? "SkillHanger" : readings.map { reading in
+            let value = reading.percent.map { "\(Int($0.rounded())) percent remaining" } ?? "No reading"
+            return "\(reading.provider.displayName), \(value)"
+        }.joined(separator: "; ")
+        return image
     }
 }
 
