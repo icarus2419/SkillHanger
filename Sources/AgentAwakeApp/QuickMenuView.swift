@@ -10,8 +10,12 @@ struct UnifiedMenuLabel: View {
     @Environment(\.displayScale) private var displayScale
 
     init(runtime: AppRuntime) {
-        usage = runtime.usage
-        prefs = runtime.prefs
+        self.init(usage: runtime.usage, prefs: runtime.prefs)
+    }
+
+    init(usage: UsageStore, prefs: Prefs) {
+        self.usage = usage
+        self.prefs = prefs
     }
 
     var body: Image {

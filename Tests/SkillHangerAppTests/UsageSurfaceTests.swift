@@ -39,6 +39,31 @@ import UsageCore
         }
     }
 
+    @Test func nativeMenuBarOwnsTwoVisibleBatteriesAndFollowsPreferences() async throws {
+        NSApplication.shared.setActivationPolicy(.prohibited)
+        let runtime = AppRuntime(preview: true)
+        let controller = UsageMenuBarController(store: runtime.usage, prefs: runtime.prefs, onSettings: {})
+        defer { controller.stop() }
+        let item = controller.statusItem
+        let button = try #require(item.button)
+        let image = try #require(button.image)
+        #expect(item.isVisible)
+        #expect(image.size.width > 70)
+        #expect(item.length >= image.size.width)
+        #expect(button.accessibilityLabel()?.contains("Claude") == true)
+        #expect(button.accessibilityLabel()?.contains("OpenAI") == true)
+        runtime.prefs.metric = .weekly
+        try await Task.sleep(for: .milliseconds(150))
+        #expect(button.image?.tiffRepresentation != image.tiffRepresentation)
+        runtime.prefs.showMenuBar = false
+        try await Task.sleep(for: .milliseconds(150))
+        #expect(!item.isVisible)
+        runtime.prefs.showMenuBar = true
+        try await Task.sleep(for: .milliseconds(150))
+        #expect(item.isVisible)
+        #expect(button.image != nil)
+    }
+
     @Test func floatingWidgetPollsAutomaticallyWhileTheAppIsInactive() async throws {
         let name = "SkillHanger.Poll.Tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: name)!

@@ -6,15 +6,7 @@ struct SkillHangerApp: App {
     @StateObject private var runtime = AppRuntime.shared
 
     var body: some Scene {
-        MenuBarExtra(isInserted: Binding(get: { !runtime.isPreview && runtime.prefs.showMenuBar },
-                                       set: { if !runtime.isPreview { runtime.prefs.showMenuBar = $0 } })) {
-            DetailView(store: runtime.usage, prefs: runtime.prefs,
-                       onRefresh: { runtime.usage.refresh() },
-                       onSettings: { runtime.open(.settings) })
-        } label: {
-            UnifiedMenuLabel(runtime: runtime)
-        }
-        .menuBarExtraStyle(.window)
+        Settings { EmptyView() }
         .commands {
             CommandGroup(replacing: .appSettings) {
                 Button("Settings…") { runtime.open(.settings) }.keyboardShortcut(",", modifiers: .command)

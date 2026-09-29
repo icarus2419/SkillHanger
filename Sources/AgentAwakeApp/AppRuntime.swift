@@ -59,6 +59,7 @@ final class AppRuntime: NSObject, ObservableObject {
     @Published private(set) var launchAtLogin = LoginItem.isEnabled
     private var window: NSWindow?
     private var widget: WidgetController?
+    private var usageMenuBar: UsageMenuBarController?
     private let notifier: Notifier
     private var cancellables: Set<AnyCancellable> = []
     private var started = false
@@ -132,6 +133,8 @@ final class AppRuntime: NSObject, ObservableObject {
         if !isPreview {
             Task { await marketplace.start() }
             monitor.start()
+            usageMenuBar = UsageMenuBarController(store: usage, prefs: prefs,
+                                                 onSettings: { [weak self] in self?.open(.settings) })
             widget = WidgetController(store: usage, prefs: prefs)
             widget?.onSettings = { [weak self] in self?.open(.settings) }
             widget?.menu = { [weak self] in self?.widgetMenu() ?? NSMenu() }
@@ -156,6 +159,8 @@ final class AppRuntime: NSObject, ObservableObject {
         monitor.stop()
         // Hiding at shutdown must not alter the persisted visibility setting.
         widget = nil
+        usageMenuBar?.stop()
+        usageMenuBar = nil
     }
 
     func connectAgent() {
@@ -306,7 +311,11 @@ final class AppRuntime: NSObject, ObservableObject {
             "windowNumber": window?.windowNumber ?? -1,
             "windowOnActiveSpace": window?.isOnActiveSpace ?? false,
             "windowExposed": window?.occlusionState.contains(.visible) ?? false,
-            "logoBundled": BrandAssets.bundle.bundleURL.deletingLastPathComponent().path == Bundle.main.resourceURL?.path
+            "logoBundled": BrandAssets.bundle.bundleURL.deletingLastPathComponent().path == Bundle.main.resourceURL?.path,
+            "usageMenuBarVisible": usageMenuBar?.statusItem.isVisible ?? false,
+            "usageMenuBarHasImage": usageMenuBar?.statusItem.button?.image != nil,
+            "usageMenuBarWidth": usageMenuBar?.statusItem.length ?? 0,
+            "usageMenuBarFrame": usageMenuBar?.statusItem.button?.window.map { NSStringFromRect($0.frame) } ?? ""
         ]
         try JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])
             .write(to: url, options: .atomic)
