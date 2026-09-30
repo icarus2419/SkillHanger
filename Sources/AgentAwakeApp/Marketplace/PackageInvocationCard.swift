@@ -9,7 +9,7 @@ struct PackageInvocationCard: View {
     private var item: CatalogItem { workspace.item }
     private var selection: PackageSelection { workspace.selection }
     private var modes: [String] { PackageCustomization.modes(item) }
-    private var disabled: Bool { store.disabledSkills[workspace.agent]?.contains(item.id) == true }
+    private var disabled: Bool { store.disabledSkills[workspace.agent]?.contains(item.id) == true || store.pluginEnabled[workspace.agent]?[item.id] == false }
     private var mode: Binding<String> {
         Binding(get: { let value = preferences.mode(for: selection); return modes.contains(value) ? value : "full" },
                 set: { preferences.setMode($0, for: selection) })
@@ -87,7 +87,7 @@ struct PackageInvocationCard: View {
                 Button("Reset invocation preferences") { preferences.reset(for: selection) }
                     .buttonStyle(ProductButtonStyle())
                     .help("Restores this package’s modes, options, and saved task for this agent. Does not change enable status.")
-                if disabled { Text("Re-enable this skill before invoking it in a new agent session.").font(.system(size: 11)).foregroundStyle(ShellPalette.muted) }
+                if disabled { Text("Re-enable this package before invoking it in a new agent session.").font(.system(size: 11)).foregroundStyle(ShellPalette.muted) }
               }
             }
         .onChange(of: invocation) { _ in copied = false }

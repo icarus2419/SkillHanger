@@ -18,7 +18,7 @@ struct UsagePage: View {
                 SectionHeading(title: "Reading preferences")
                 SwitchRow(title: "Low-allowance alerts", detail: "Notify at 20%, 10%, depletion, and refill.", symbol: "bell", value: $runtime.prefs.alerts)
                 Divider()
-                SettingRow(title: "Automatic refresh", detail: "Provider retry windows are respected.", symbol: "arrow.clockwise") {
+                SettingRow(title: "Automatic refresh", detail: "Four minutes balances freshness and fewer requests. Local Codex updates arrive between checks.", symbol: "arrow.clockwise") {
                     refreshPicker
                 }
             }
@@ -42,12 +42,12 @@ struct UsagePage: View {
     }
     var refreshPicker: some View {
         Menu {
-            ForEach([1, 2, 5, 10, 15, 30], id: \.self) { minutes in
+            ForEach(Prefs.refreshOptions, id: \.self) { minutes in
                 Button {
                     runtime.prefs.refreshMinutes = minutes
                 } label: {
                     if runtime.prefs.refreshMinutes == minutes { Label("Every \(minutes) min", systemImage: "checkmark") }
-                    else { Text("Every \(minutes) min") }
+                    else { Text("Every \(minutes) min\(minutes == Prefs.defaultRefreshMinutes ? " · Recommended" : "")") }
                 }
             }
         } label: {
@@ -162,4 +162,3 @@ struct UsageProviderCard: View {
         return reading.usage?.source == .localLog ? "internaldrive" : "checkmark.circle"
     }
 }
-

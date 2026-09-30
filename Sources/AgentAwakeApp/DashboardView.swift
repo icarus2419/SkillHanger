@@ -66,6 +66,18 @@ struct DashboardView: View {
         .transaction { if runtime.isPreview && ProcessInfo.processInfo.arguments.contains("--render-preview") { $0.disablesAnimations = true } }
         .ignoresSafeArea()
         .tint(ShellPalette.accent)
+        .overlay(alignment: .bottomTrailing) {
+            if let feedback = runtime.feedback {
+                Label(feedback, systemImage: "checkmark.circle.fill")
+                    .font(.system(size: 12, weight: .medium)).foregroundStyle(ShellPalette.accent)
+                    .padding(.horizontal, 16).padding(.vertical, 12)
+                    .background(ShellPalette.surface, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(ShellPalette.line))
+                    .padding(.trailing, 28).padding(.bottom, 52)
+                    .allowsHitTesting(false).accessibilityElement(children: .combine)
+                    .transition(.opacity)
+            }
+        }
         .preferredColorScheme(previewAppearance ?? (runtime.prefs.theme == .system ? nil : runtime.prefs.theme == .dark ? .dark : .light))
         .alert("SkillHanger", isPresented: Binding(get: { runtime.notice != nil }, set: { if !$0 { runtime.notice = nil } })) {
             Button("OK") { runtime.notice = nil }
@@ -79,6 +91,16 @@ struct DashboardView: View {
     }
 
     private var sidebar: some View {
+        GeometryReader { geometry in
+            sidebarContent(compact: geometry.size.height < 700)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .foregroundStyle(.white)
+        .background(ShellPalette.sidebar, in: RoundedRectangle(cornerRadius: 26))
+        .preferredColorScheme(.dark)
+    }
+
+    private func sidebarContent(compact: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
                 BrandMark(size: 36)
@@ -87,39 +109,16 @@ struct DashboardView: View {
                     Text("Your workspace").font(.system(size: 10)).foregroundStyle(.white.opacity(0.58))
                 }
             }
-            .padding(.horizontal, 20).padding(.top, 24).padding(.bottom, 36)
-            navigationItems
+            .padding(.horizontal, 20).padding(.top, compact ? 20 : 24).padding(.bottom, compact ? 20 : 36)
+            DashboardNavigation(monitor: runtime.monitor, page: $runtime.page, compact: compact)
             InstalledPackageSidebar(store: runtime.marketplace, page: $runtime.page)
             Spacer(minLength: 12)
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 7) {
-                    Image(systemName: runtime.monitor.isMonitoringEnabled ? "dot.radiowaves.left.and.right" : "pause.circle")
-                        .foregroundStyle(runtime.monitor.isMonitoringEnabled ? ShellPalette.brandHighlight : .white.opacity(0.55))
-                    Text(runtime.monitor.isMonitoringEnabled ? "Monitoring" : "Monitoring paused")
-                        .font(.system(size: 11, weight: .medium))
-                }
-                Text("Local on this Mac")
-                    .font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
-            }.padding(.horizontal, 24).padding(.bottom, 22)
+            DashboardMonitoringStatus(monitor: runtime.monitor)
+                .padding(.horizontal, 24).padding(.bottom, compact ? 14 : 22)
             Rectangle().fill(.white.opacity(0.09)).frame(height: 1).padding(.horizontal, 20)
-            NavigationItem(page: .settings, selected: runtime.page == .settings) { runtime.page = .settings }
-                .padding(.horizontal, 12).padding(.vertical, 14)
+            NavigationItem(page: .settings, selected: runtime.page == .settings, compact: compact) { runtime.page = .settings }
+                .padding(.horizontal, 12).padding(.vertical, compact ? 10 : 14)
         }
-        .foregroundStyle(.white)
-        .background(ShellPalette.sidebar, in: RoundedRectangle(cornerRadius: 26))
-        .preferredColorScheme(.dark)
-    }
-
-    private var navigationItems: some View {
-              VStack(spacing: 5) {
-                ForEach(AppPage.allCases.filter { $0 != .settings && $0 != .packageWorkspace && $0 != .installed }) { page in
-                    NavigationItem(page: page, selected: runtime.page == page,
-                                   count: page == .activity ? runtime.monitor.runningCount : 0) {
-                        if page == .marketplace { runtime.marketplace.browse() }
-                        runtime.page = page
-                    }
-                }
-              }.padding(.horizontal, 12)
     }
 
     private var header: some View {
@@ -157,7 +156,8 @@ struct DashboardView: View {
                 ActionButton(title: runtime.usage.loading.isEmpty ? "Refresh" : "Checking…", symbol: "arrow.clockwise") {
                     if !runtime.isPreview { runtime.usage.refresh() }
                 }
-                .disabled(!runtime.usage.loading.isEmpty || runtime.prefs.providers.isEmpty)
+                .disabled(!runtime.isPreview && !runtime.usage.canRefresh)
+                .help(runtime.usage.refreshHelp)
                 .keyboardShortcut("r", modifiers: .command)
             }
         }
@@ -165,14 +165,50 @@ struct DashboardView: View {
     }
 
     private var footer: some View {
+        DashboardFooter(store: runtime.usage, marketplace: runtime.page == .marketplace)
+    }
+}
+
+private struct DashboardNavigation: View {
+    @ObservedObject var monitor: MonitorModel
+    @Binding var page: AppPage
+    var compact: Bool
+    var body: some View {
+        VStack(spacing: 5) {
+            ForEach(AppPage.allCases.filter { $0 != .settings && $0 != .packageWorkspace && $0 != .installed }) { destination in
+                NavigationItem(page: destination, selected: page == destination,
+                               count: destination == .activity ? monitor.runningCount : 0,
+                               compact: compact) { page = destination }
+            }
+        }.padding(.horizontal, 12)
+    }
+}
+
+private struct DashboardMonitoringStatus: View {
+    @ObservedObject var monitor: MonitorModel
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(monitor.isMonitoringEnabled ? "Monitoring" : "Monitoring paused",
+                  systemImage: monitor.isMonitoringEnabled ? "dot.radiowaves.left.and.right" : "pause.circle")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(monitor.isMonitoringEnabled ? ShellPalette.brandHighlight : .white.opacity(0.65))
+            Text("Local on this Mac").font(.system(size: 10)).foregroundStyle(.white.opacity(0.55))
+        }
+    }
+}
+
+private struct DashboardFooter: View {
+    @ObservedObject var store: UsageStore
+    var marketplace: Bool
+    var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "lock").foregroundStyle(ShellPalette.muted)
-            Text(runtime.page == .marketplace ? "Skills & plugins from GitHub" : "Local task metadata").foregroundStyle(ShellPalette.muted)
+            Text(marketplace ? "Skills & plugins from GitHub" : "Private on this Mac").foregroundStyle(ShellPalette.muted)
             Spacer()
-            if runtime.page == .marketplace {
+            if marketplace {
                 Text("User-scope installs · Codex & Claude Code").foregroundStyle(ShellPalette.muted)
-            } else if let date = runtime.usage.lastUpdated {
-                Text("Usage checked \(UsageFormat.ago(date, now: runtime.usage.now))").foregroundStyle(ShellPalette.muted)
+            } else if let date = store.lastUpdated {
+                Text("Usage checked \(UsageFormat.ago(date, now: store.now))").foregroundStyle(ShellPalette.muted)
             } else { Text("No usage reading yet").foregroundStyle(ShellPalette.muted) }
         }
         .font(.system(size: 10)).padding(.horizontal, 28).padding(.vertical, 12)
@@ -184,6 +220,7 @@ private struct NavigationItem: View {
     let page: AppPage
     let selected: Bool
     var count = 0
+    var compact = false
     let action: () -> Void
     @Environment(\.accessibilityReduceMotion) private var systemReduceMotion
     @Environment(\.forceReducedMotion) private var forcedReduceMotion
@@ -205,7 +242,8 @@ private struct NavigationItem: View {
                 }
             }
             .foregroundStyle(.white.opacity(selected ? 1 : 0.70))
-            .padding(.horizontal, 12).padding(.vertical, 12)
+            .padding(.horizontal, 12).padding(.vertical, compact ? 8 : 12)
+            .frame(minHeight: compact ? 34 : 40)
             .background {
                 if selected {
                     RoundedRectangle(cornerRadius: 15).fill(ShellPalette.brandHighlight.opacity(0.16))

@@ -79,7 +79,7 @@ struct SidebarInteractionTests {
         let external = home.appendingPathComponent(".agents/skills/caveman")
         try FileManager.default.createDirectory(at: external, withIntermediateDirectories: true)
         try files[0].data.write(to: external.appendingPathComponent("SKILL.md"))
-        store.reconcileSkills()
+        await store.reconcileSkills()
         #expect(store.installed[.codex]?.contains(item.id) == true)
         #expect(store.canRemove(item, agent: .codex))
         #expect(store.canRemove(item, agent: .claude))

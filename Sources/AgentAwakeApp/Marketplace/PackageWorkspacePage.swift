@@ -39,7 +39,7 @@ struct PackageWorkspacePage: View {
     @State private var loading = false
     private var item: CatalogItem { workspace.item }
     private var selection: PackageSelection { workspace.selection }
-    private var disabled: Bool { store.disabledSkills[workspace.agent]?.contains(item.id) == true }
+    private var disabled: Bool { store.disabledSkills[workspace.agent]?.contains(item.id) == true || store.pluginEnabled[workspace.agent]?[item.id] == false }
     private var invocation: String {
         PackageCustomization.invocation(item, agent: workspace.agent, mode: preferences.mode(for: selection), task: preferences.task(for: selection), options: preferences.options(for: selection))
     }
@@ -106,10 +106,13 @@ struct PackageWorkspacePage: View {
             if store.preview {
                 instructions = "Sample package guidance\n\n\(item.detail)\n\n\(invocation)"
             } else {
-                let root = try store.installer.existingSkillURL(item, for: workspace.agent)
-                let url = root.appendingPathComponent("SKILL.md")
-                guard try (url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= 1_000_000 else { throw MarketplaceError.invalid("This instruction file is too large to display.") }
-                instructions = try String(contentsOf: url, encoding: .utf8)
+                let installer = store.installer, item = item, agent = workspace.agent
+                instructions = try await Task.detached(priority: .userInitiated) {
+                    let root = try installer.existingSkillURL(item, for: agent)
+                    let url = root.appendingPathComponent("SKILL.md")
+                    guard try (url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0) <= 1_000_000 else { throw MarketplaceError.invalid("This instruction file is too large to display.") }
+                    return try String(contentsOf: url, encoding: .utf8)
+                }.value
             }
         } catch { instructionError = error.localizedDescription }
     }

@@ -3,12 +3,23 @@ import Combine
 
 @MainActor
 final class MarketplaceStore: ObservableObject {
-    @Published var items: [CatalogItem] = []
-    @Published var query = CatalogQuery()
+    typealias ReadSkills = @Sendable ([CatalogItem], MarketplaceInstaller) async -> [MarketplaceAgent: MarketplaceSkillInventory]
+    typealias ReadPlugins = @Sendable (MarketplaceAgent, NativeAgentCLI) async throws -> Data
+    typealias ReadSource = @Sendable (CatalogRefreshSource, GitHubCatalog) async throws -> [CatalogItem]
+    @Published var items: [CatalogItem] = [] {
+        didSet { catalogIndex = nil; cachedSnapshot = nil; cachedWorkspaces = nil; inventoryRevision += 1 }
+    }
+    @Published var query = CatalogQuery() {
+        didSet { if query != oldValue { cachedSnapshot = nil } }
+    }
     @Published private(set) var refreshing = false
+    @Published private(set) var refreshedSourceCount = 0
+    @Published private(set) var canCancelRefresh = false
     @Published private(set) var checking = false
     @Published private(set) var busy: Set<String> = []
-    @Published private(set) var installed: [MarketplaceAgent: Set<String>] = [:]
+    @Published private(set) var installed: [MarketplaceAgent: Set<String>] = [:] {
+        didSet { if installed != oldValue { cachedSnapshot = nil; cachedWorkspaces = nil } }
+    }
     @Published private(set) var managedSkills: [MarketplaceAgent: Set<String>] = [:]
     @Published private(set) var externalSkills: [MarketplaceAgent: Set<String>] = [:]
     @Published private(set) var disabledSkills: [MarketplaceAgent: Set<String>] = [:]
@@ -26,11 +37,35 @@ final class MarketplaceStore: ObservableObject {
     let github = GitHubCatalog()
     let cli: NativeAgentCLI
     private var operations: [String: Task<Void, Never>] = [:]
-    private var started = false
     private let cacheURL: URL
+    private var catalogIndex: CatalogIndex?
+    private var cachedSnapshot: CatalogSnapshot?
+    private var cachedWorkspaces: [InstalledPackage]?
+    private var inventoryRevision = 0
+    private var lastInventoryAt: Date?
+    private let readSkills: ReadSkills
+    private let readPlugins: ReadPlugins
+    private let readSource: ReadSource
+    private let refreshSources: [CatalogRefreshSource]
+    private var refreshOperation: Task<[CatalogRefreshResult], Never>?
+    var refreshSourceCount: Int { refreshSources.count }
 
-    init(preview: Bool = false, home: URL = FileManager.default.homeDirectoryForCurrentUser, defaults: UserDefaults? = nil) {
+    private var index: CatalogIndex {
+        if let catalogIndex { return catalogIndex }
+        let built = CatalogIndex(items: items)
+        catalogIndex = built
+        return built
+    }
+
+    init(preview: Bool = false, home: URL = FileManager.default.homeDirectoryForCurrentUser, defaults: UserDefaults? = nil,
+         readSkills: @escaping ReadSkills = { await MarketplaceSkillInventory.read(items: $0, installer: $1) },
+         readPlugins: @escaping ReadPlugins = { try await $1.run($0, arguments: ["plugin", "list", "--json"], timeout: 12) },
+         refreshSources: [CatalogRefreshSource]? = nil,
+         readSource: @escaping ReadSource = { try await $0.load(using: $1) }) {
         self.preview = preview; installer = MarketplaceInstaller(home: home); cli = NativeAgentCLI(home: home)
+        self.readSkills = readSkills; self.readPlugins = readPlugins
+        self.readSource = readSource
+        self.refreshSources = refreshSources ?? MarketplaceAgent.allCases.map(CatalogRefreshSource.plugins) + ((try? CatalogLoader.skillSources()) ?? []).map(CatalogRefreshSource.skills)
         let isolated = preview || home != FileManager.default.homeDirectoryForCurrentUser
         packagePreferences = PackagePreferences(defaults: defaults ?? (isolated ? UserDefaults(suiteName: "SkillHanger.Packages.\(UUID().uuidString)")! : .standard))
         cacheURL = home.appendingPathComponent("Library/Application Support/SkillHanger/marketplace-catalog.json")
@@ -81,49 +116,59 @@ final class MarketplaceStore: ObservableObject {
                 workspaceSelection = PackageSelection(itemID: item.id, agent: query.agent)
                 pluginEnabled[query.agent] = [item.id: true]
             }
-        } else {
-            reconcileSkills()
         }
     }
-    func reconcileSkills() {
-        for agent in MarketplaceAgent.allCases {
-            var found = Set((installed[agent] ?? []).filter { id in items.contains { $0.id == id && $0.kind == .plugin } })
-            let skills = skillInventory(agent)
-            found.formUnion(skills.found)
-            installed[agent] = found; managedSkills[agent] = skills.owned; disabledSkills[agent] = skills.disabled; externalSkills[agent] = skills.external
-        }
-    }
-    private func skillInventory(_ agent: MarketplaceAgent) -> (found: Set<String>, owned: Set<String>, disabled: Set<String>, external: Set<String>) {
-        var found: Set<String> = [], owned: Set<String> = [], disabled: Set<String> = [], external: Set<String> = []
-        for item in items where item.kind == .skill && item.agents.contains(agent) {
-            if let state = try? installer.skillState(item, for: agent), state != .absent {
-                found.insert(item.id)
-                if state == .managed || state == .disabled { owned.insert(item.id) }
-                if state == .disabled { disabled.insert(item.id) }
-                if state == .external, (try? installer.canTrashExternalSkill(item, for: agent)) == true { external.insert(item.id) }
+    func reconcileSkills() async {
+        while !Task.isCancelled {
+            let revision = inventoryRevision
+            let inventories = await readSkills(items, installer)
+            // An install can finish while the background reader is suspended.
+            guard revision == inventoryRevision else { continue }
+            let pluginIDs = Set(items.filter { $0.kind == .plugin }.map(\.id))
+            for agent in MarketplaceAgent.allCases {
+                let skills = inventories[agent] ?? MarketplaceSkillInventory()
+                let found = (installed[agent] ?? []).intersection(pluginIDs).union(skills.found)
+                if installed[agent] != found { installed[agent] = found }
+                if managedSkills[agent] != skills.owned { managedSkills[agent] = skills.owned }
+                if disabledSkills[agent] != skills.disabled { disabledSkills[agent] = skills.disabled }
+                if externalSkills[agent] != skills.external { externalSkills[agent] = skills.external }
             }
+            return
         }
-        return (found, owned, disabled, external)
     }
     func setSkillEnabled(_ item: CatalogItem, agent: MarketplaceAgent, enabled: Bool) {
-        guard !preview, !busy.contains(key(item, agent: agent)) else { return }
-        do {
+        let operationKey = key(item, agent: agent)
+        guard !preview, !busy.contains(operationKey) else { return }
+        busy.insert(operationKey)
+        operations[operationKey] = Task {
+            defer { busy.remove(operationKey); operations[operationKey] = nil }
+            do { try await changeSkillEnabled(item, agent: agent, enabled: enabled) }
+            catch { message = "Could not change \(item.title). \(error.localizedDescription)" }
+        }
+    }
+    func changeSkillEnabled(_ item: CatalogItem, agent: MarketplaceAgent, enabled: Bool) async throws {
+        let installer = installer
+        try await Task.detached(priority: .userInitiated) {
             try installer.setSkillEnabled(item, for: agent, enabled: enabled)
-            reconcileSkills()
-            message = "\(item.title) \(enabled ? "enabled" : "disabled") for \(agent.title). Start a new session to apply the change."
-        } catch { message = "Could not change \(item.title). \(error.localizedDescription)" }
+        }.value
+        inventoryRevision += 1
+        await reconcileSkills()
+        message = "\(item.title) \(enabled ? "enabled" : "disabled") for \(agent.title). Start a new session to apply the change."
     }
     var workspaces: [InstalledPackage] {
+        if let cachedWorkspaces { return cachedWorkspaces }
         var result: [InstalledPackage] = []
         for agent in MarketplaceAgent.allCases {
             for item in items where installed[agent]?.contains(item.id) == true {
                 result.append(InstalledPackage(item: item, agent: agent))
             }
         }
-        return result.sorted { a, b in
+        result.sort { a, b in
             if a.item.title == b.item.title { return a.id < b.id }
             return a.item.title.localizedStandardCompare(b.item.title) == .orderedAscending
         }
+        cachedWorkspaces = result
+        return result
     }
     var selectedWorkspace: InstalledPackage? { workspaces.first { $0.selection == workspaceSelection } }
     func openWorkspace(_ item: CatalogItem, agent: MarketplaceAgent? = nil) {
@@ -134,18 +179,31 @@ final class MarketplaceStore: ObservableObject {
     func browse() { query.scope = .all; query.category = nil; query.search = ""; query.sort = .recommended }
     func installSkill(_ item: CatalogItem, for agent: MarketplaceAgent, files: [SkillFile]) async throws {
         _ = try await installer.installSkill(item, for: agent, files: files)
+        inventoryRevision += 1
         managedSkills[agent, default: []].insert(item.id)
         installed[agent, default: []].insert(item.id)
         openWorkspace(item, agent: agent)
     }
-    var snapshot: CatalogSnapshot { query.snapshot(in: items, installed: installed[query.agent] ?? []) }
+    var snapshot: CatalogSnapshot {
+        if let cachedSnapshot { return cachedSnapshot }
+        let built = index.snapshot(query: query, installed: installed[query.agent] ?? [])
+        cachedSnapshot = built
+        return built
+    }
     var results: [CatalogItem] { snapshot.results }
-    var categories: [CatalogCategory] { CatalogCategory.allCases.filter { category in items.contains { $0.category == category && $0.agents.contains(query.agent) } } }
+    var categories: [CatalogCategory] { index.categories(for: query.agent) }
     func count(_ category: CatalogCategory?) -> Int {
         let current = snapshot
         return category.map { current.counts[$0, default: 0] } ?? current.total
     }
-    func isInstalled(_ item: CatalogItem) -> Bool { installed[query.agent]?.contains(item.id) == true }
+    func isInstalled(_ item: CatalogItem, agent: MarketplaceAgent? = nil) -> Bool { installed[agent ?? query.agent]?.contains(item.id) == true }
+    func rowState(_ item: CatalogItem, agent: MarketplaceAgent? = nil) -> MarketplaceRowState {
+        let target = agent ?? query.agent
+        return MarketplaceRowState(agent: target, installed: isInstalled(item, agent: target),
+            busy: isBusy(item, agent: target),
+            disabled: disabledSkills[target]?.contains(item.id) == true || pluginEnabled[target]?[item.id] == false,
+            canInstall: !preview && (item.kind != .plugin || !checking))
+    }
     func canRemove(_ item: CatalogItem, agent target: MarketplaceAgent? = nil) -> Bool {
         let agent = target ?? query.agent
         return installed[agent]?.contains(item.id) == true &&
@@ -154,49 +212,109 @@ final class MarketplaceStore: ObservableObject {
     func isBusy(_ item: CatalogItem, agent: MarketplaceAgent? = nil) -> Bool { busy.contains(key(item, agent: agent ?? query.agent)) }
     private func key(_ item: CatalogItem, agent: MarketplaceAgent) -> String { agent.rawValue + ":" + item.id }
     func start() async {
-        guard !started else { return }; started = true
-        if !preview { await reconcile() }
+        guard !preview else { return }
+        await reconcile(force: false)
     }
     func refresh() async {
         guard !preview, !refreshing else { return }
-        refreshing = true; catalogNotice = nil
-        defer { refreshing = false }
+        refreshing = true; catalogNotice = nil; refreshedSourceCount = 0; canCancelRefresh = true
+        defer { refreshing = false; refreshOperation = nil; canCancelRefresh = false }
+        let sources = refreshSources, github = github, reader = readSource
+        let operation = Task {
+            await withTaskGroup(of: CatalogRefreshResult.self) { group in
+                func enqueue(_ index: Int) {
+                    group.addTask {
+                        do {
+                            try Task.checkCancellation()
+                            return CatalogRefreshResult(index: index, items: try await reader(sources[index], github))
+                        } catch { return CatalogRefreshResult(index: index, error: error.localizedDescription) }
+                    }
+                }
+                var next = 0
+                for index in 0..<min(3, sources.count) { enqueue(index); next += 1 }
+                var results: [CatalogRefreshResult] = []
+                while let result = await group.next() {
+                    results.append(result)
+                    refreshedSourceCount = results.count
+                    if Task.isCancelled { group.cancelAll() }
+                    else if next < sources.count { enqueue(next); next += 1 }
+                }
+                return results.sorted { $0.index < $1.index }
+            }
+        }
+        refreshOperation = operation
+        let results = await withTaskCancellationHandler {
+            await operation.value
+        } onCancel: { operation.cancel() }
+        guard !operation.isCancelled, !Task.isCancelled else {
+            message = "Catalog refresh canceled. Your saved packages are still available."
+            return
+        }
+        canCancelRefresh = false
+        var updated = items
+        let artwork = Dictionary(items.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         var failures: [String] = []
         var refreshedSources = 0
-        // Each source is replaced only after it loads completely.
-        for agent in MarketplaceAgent.allCases {
-            do {
-                let loaded = try await github.plugins(agent: agent)
-                items.removeAll { $0.kind == .plugin && $0.agents == [agent] }; items += loaded
+        for result in results {
+            let source = sources[result.index]
+            if let loaded = result.items {
+                updated.removeAll(where: source.contains)
+                updated += loaded.map { item in
+                    var item = item
+                    if item.logoName == nil, let saved = artwork[item.id], saved.repository == item.repository {
+                        item.logoName = saved.logoName
+                    }
+                    return item
+                }
                 refreshedSources += 1
-            } catch { failures.append("\(agent.title) plugins: \(error.localizedDescription)") }
-        }
-        for source in (try? CatalogLoader.skillSources()) ?? [] {
-            do {
-                let loaded = try await github.skills(source: source)
-                items.removeAll { $0.kind == .skill && $0.repository == source.repository }; items += loaded
-                refreshedSources += 1
-            } catch { failures.append("\(source.repository): \(error.localizedDescription)") }
+            } else { failures.append("\(source.title): \(result.error ?? "This source is unavailable.")") }
         }
         if refreshedSources > 0 {
+            // Publish once. Browsing never sorts an incomplete catalog between
+            // network responses, and cancellation cannot leave a partial cache.
+            items = updated
+            let saved = updated, cacheURL = cacheURL
             do {
-                try FileManager.default.createDirectory(at: cacheURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try JSONEncoder().encode(items).write(to: cacheURL, options: .atomic)
+                try await Task.detached(priority: .utility) {
+                    try FileManager.default.createDirectory(at: cacheURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    try JSONEncoder().encode(saved).write(to: cacheURL, options: .atomic)
+                }.value
                 lastRefreshed = Date()
             } catch { failures.append("Could not save the catalog: \(error.localizedDescription)") }
         }
         catalogNotice = failures.isEmpty ? nil : "Some sources could not refresh. Their saved entries are still available.\n" + failures.joined(separator: "\n")
+        if failures.isEmpty { message = "Catalog refreshed. \(refreshedSources) sources updated." }
         await reconcile()
     }
-    func reconcile() async {
+    func cancelRefresh() {
+        guard canCancelRefresh else { return }
+        canCancelRefresh = false
+        refreshOperation?.cancel()
+    }
+    func reconcile(force: Bool = true) async {
         guard !preview, !checking else { return }
+        if !force, let lastInventoryAt, Date().timeIntervalSince(lastInventoryAt) < 90 { return }
         checking = true
         defer { checking = false }
-        for agent in MarketplaceAgent.allCases {
+        await reconcileSkills()
+        let cli = cli, reader = readPlugins
+        let inventories = await withTaskGroup(of: MarketplacePluginInventoryResult.self) { group in
+            for agent in MarketplaceAgent.allCases {
+                group.addTask {
+                    do { return MarketplacePluginInventoryResult(agent: agent, data: try await reader(agent, cli)) }
+                    catch { return MarketplacePluginInventoryResult(agent: agent, error: error.localizedDescription) }
+                }
+            }
+            var results: [MarketplacePluginInventoryResult] = []
+            for await result in group { results.append(result) }
+            return results
+        }
+        guard !Task.isCancelled else { return }
+        for inventory in inventories {
+            let agent = inventory.agent
             var found: Set<String> = []
             do {
-                let args = ["plugin", "list", "--json"]
-                let data = try await cli.run(agent, arguments: args, timeout: 30)
+                guard let data = inventory.data else { throw MarketplaceError.command(inventory.error ?? "The agent inventory is unavailable.") }
                 let identifiers = try NativePluginInventory.identifiers(data, agent: agent)
                 let states = try NativePluginInventory.enabledStates(data, agent: agent)
                 pluginSelectors[agent] = [:]
@@ -215,15 +333,17 @@ final class MarketplaceStore: ObservableObject {
             }
             // Skill installs can complete while native plugin inventory awaits.
             // Re-read the filesystem at publication so those workspaces survive.
-            let skills = skillInventory(agent)
-            found.formUnion(skills.found)
-            installed[agent] = found; managedSkills[agent] = skills.owned; disabledSkills[agent] = skills.disabled; externalSkills[agent] = skills.external
+            let skillIDs = Set(items.filter { $0.kind == .skill }.map(\.id))
+            found.formUnion((installed[agent] ?? []).intersection(skillIDs))
+            if installed[agent] != found { installed[agent] = found }
         }
+        await reconcileSkills()
+        lastInventoryAt = Date()
         if let selection = workspaceSelection, installed[selection.agent]?.contains(selection.itemID) != true { workspaceSelection = nil }
     }
-    func install(_ item: CatalogItem) {
-        guard !preview, !isBusy(item), !isInstalled(item) else { return }
-        let agent = query.agent, operationKey = key(item, agent: query.agent)
+    func install(_ item: CatalogItem, agent target: MarketplaceAgent? = nil) {
+        let agent = target ?? query.agent, operationKey = key(item, agent: target ?? query.agent)
+        guard !preview, !isBusy(item, agent: agent), !isInstalled(item, agent: agent) else { return }
         busy.insert(operationKey); message = nil
         operations[operationKey] = Task {
             defer { busy.remove(operationKey); operations[operationKey] = nil }
@@ -234,7 +354,10 @@ final class MarketplaceStore: ObservableObject {
                 } else {
                     var installItem = item
                     if agent == .codex {
-                        let (translated, root) = try GitHubPluginMarketplace.prepare(item, home: installer.home)
+                        let home = installer.home
+                        let (translated, root) = try await Task.detached(priority: .userInitiated) {
+                            try GitHubPluginMarketplace.prepare(item, home: home)
+                        }.value
                         installItem = translated
                         _ = try await cli.run(agent, arguments: ["plugin", "marketplace", "add", root.path])
                     } else {
@@ -252,7 +375,7 @@ final class MarketplaceStore: ObservableObject {
             } catch { message = "Could not install \(item.title). \(error.localizedDescription)" }
         }
     }
-    func cancel(_ item: CatalogItem) { operations[key(item, agent: query.agent)]?.cancel() }
+    func cancel(_ item: CatalogItem, agent: MarketplaceAgent? = nil) { operations[key(item, agent: agent ?? query.agent)]?.cancel() }
     func setPluginEnabled(_ item: CatalogItem, agent: MarketplaceAgent, enabled: Bool) {
         let operationKey = key(item, agent: agent)
         guard !preview, item.kind == .plugin, agent == .claude, installed[agent]?.contains(item.id) == true,
@@ -278,8 +401,12 @@ final class MarketplaceStore: ObservableObject {
             defer { busy.remove(operationKey); operations[operationKey] = nil }
             do {
                 if item.kind == .skill {
-                    if try installer.skillState(item, for: agent) == .external { try installer.trashExternalSkill(item, for: agent) }
-                    else { try installer.removeSkill(item, for: agent) }
+                    let installer = installer
+                    try await Task.detached(priority: .userInitiated) {
+                        if try installer.skillState(item, for: agent) == .external { try installer.trashExternalSkill(item, for: agent) }
+                        else { try installer.removeSkill(item, for: agent) }
+                    }.value
+                    inventoryRevision += 1
                 }
                 else {
                     var installedItem = item

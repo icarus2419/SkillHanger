@@ -24,18 +24,19 @@ enum PackageWorkspaceVerification {
                         guard try Data(contentsOf: destination.appendingPathComponent(file.path)) == file.data else { throw MarketplaceError.invalid("The installed \(name) file differs from GitHub.") }
                     }
                     store.packagePreferences.setMode("ultra", for: selection)
-                    store.setSkillEnabled(item, agent: agent, enabled: false)
+                    try await store.changeSkillEnabled(item, agent: agent, enabled: false)
                     let restarted = MarketplaceStore(home: home, defaults: defaults)
+                    await restarted.reconcileSkills()
                     guard restarted.workspaces.contains(where: { $0.selection == selection }),
                           restarted.packagePreferences.mode(for: selection) == "ultra",
                           restarted.disabledSkills[agent]?.contains(item.id) == true,
                           !fm.fileExists(atPath: destination.path) else { throw MarketplaceError.invalid("Disabled workspace settings did not survive restart.") }
-                    restarted.setSkillEnabled(item, agent: agent, enabled: true)
+                    try await restarted.changeSkillEnabled(item, agent: agent, enabled: true)
                     for file in files {
                         guard try Data(contentsOf: destination.appendingPathComponent(file.path)) == file.data else { throw MarketplaceError.invalid("Re-enabled skill files changed.") }
                     }
                     try store.installer.removeSkill(item, for: agent)
-                    store.reconcileSkills()
+                    await store.reconcileSkills()
                     guard !store.workspaces.contains(where: { $0.selection == selection }) else { throw MarketplaceError.invalid("The removed workspace is still installed.") }
                     checks.append(["name": name, "repository": item.repository, "revision": item.revision, "agent": agent.rawValue,
                                    "fileCount": files.count, "filesMatch": true, "workspaceOpened": true,

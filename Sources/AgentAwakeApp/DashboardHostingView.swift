@@ -62,6 +62,10 @@ final class DashboardWindow: NSWindow {
     deinit { screenObservers.forEach(NotificationCenter.default.removeObserver) }
 
     override func sendEvent(_ event: NSEvent) {
+        if event.type == .keyDown, event.keyCode == 53, attachedSheet == nil,
+           let dashboard = contentView as? DashboardHostingView {
+            dashboard.dismissSwipes()
+        }
         if (event.type == .leftMouseDown || event.type == .rightMouseDown), attachedSheet == nil,
            let dashboard = contentView as? DashboardHostingView {
             dashboard.dismissSwipes(unlessContaining: event)
@@ -79,6 +83,22 @@ final class DashboardWindow: NSWindow {
 final class DashboardHostingView: NSHostingView<DashboardView> {
     private weak var activeSwipeRegion: SidebarSwipeRegionView?
     private weak var activeScrollView: NSScrollView?
+    private let registeredSwipeRegions = NSHashTable<SidebarSwipeRegionView>.weakObjects()
+
+    required init(rootView: DashboardView) {
+        super.init(rootView: rootView)
+        // The native window owns its screen-aware size. A notice or long page
+        // must scroll within that window, rather than expand its minimum size.
+        sizingOptions = []
+    }
+
+    required init?(coder: NSCoder) { super.init(coder: coder) }
+
+    func registerSwipeRegion(_ region: SidebarSwipeRegionView) { registeredSwipeRegions.add(region) }
+
+    private var swipeRegions: [SidebarSwipeRegionView] {
+        registeredSwipeRegions.allObjects.filter { $0.window === window && $0.isDescendant(of: self) }
+    }
     override func scrollWheel(with event: NSEvent) {
         let beginning = event.phase.contains(.began) || event.phase.contains(.mayBegin)
         let ending = event.phase.contains(.ended) || event.phase.contains(.cancelled) || event.momentumPhase.contains(.ended)
@@ -91,7 +111,7 @@ final class DashboardHostingView: NSHostingView<DashboardView> {
             return
         }
         activeScrollView = nil
-        let regionUnderPointer = swipeRegions(in: self).first(where: { $0.contains(event) })
+        let regionUnderPointer = swipeRegions.first(where: { $0.contains(event) })
         if let region = regionUnderPointer, region.handleScroll(event) {
             activeSwipeRegion = region
             return
@@ -135,23 +155,19 @@ final class DashboardHostingView: NSHostingView<DashboardView> {
     }
 
     func dismissSwipes(unlessContaining event: NSEvent? = nil) {
-        for region in swipeRegions(in: self) where region.isRevealed {
+        for region in swipeRegions where region.isRevealed {
             if let event, region.contains(event) { continue }
             region.onDismiss()
-        }
-    }
-
-    private func swipeRegions(in view: NSView) -> [SidebarSwipeRegionView] {
-        view.subviews.flatMap { child in
-            ((child as? SidebarSwipeRegionView).map { [$0] } ?? []) + swipeRegions(in: child)
         }
     }
 
     private func scrollViews(in view: NSView) -> [NSScrollView] {
         var result: [NSScrollView] = []
         for child in view.subviews {
+            // A page viewport is the routing boundary. Do not walk every row,
+            // text field, and image inside its document on every wheel event.
             if let scroll = child as? NSScrollView { result.append(scroll) }
-            result += scrollViews(in: child)
+            else { result += scrollViews(in: child) }
         }
         return result
     }

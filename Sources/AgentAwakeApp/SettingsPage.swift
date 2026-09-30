@@ -47,7 +47,7 @@ struct SettingsPage: View {
                 Divider()
                 SwitchRow(title: "Codex usage", detail: "Uses your Codex login and local usage snapshots.", symbol: "hexagon", value: $runtime.prefs.showOpenAI)
                 Divider()
-                SettingRow(title: "Automatic refresh", detail: "Requests respect provider retry windows.", symbol: "arrow.clockwise") {
+                SettingRow(title: "Automatic refresh", detail: "Four minutes is recommended. Retry windows and live local updates are respected.", symbol: "arrow.clockwise") {
                     UsagePage(runtime: runtime).refreshPicker
                 }
                 Divider()

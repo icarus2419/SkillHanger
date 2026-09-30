@@ -161,8 +161,9 @@ import Testing
         sidebar.contentView.scroll(to: .zero)
         sidebar.reflectScrolledClipView(sidebar.contentView)
         hosting.layoutSubtreeIfNeeded()
-        let region = try #require(allSwipeRegions(hosting).first { $0.visibleRect.height >= 40 })
-        let point = region.convert(NSPoint(x: region.visibleRect.midX, y: region.visibleRect.midY), to: hosting)
+        let region = try #require(allSwipeRegions(hosting).first { $0.bounds.intersection($0.visibleRect).height >= 40 })
+        let visibleBounds = region.bounds.intersection(region.visibleRect)
+        let point = region.convert(NSPoint(x: visibleBounds.midX, y: visibleBounds.midY), to: hosting)
         let originalUpdate = region.onUpdate
         let originalFinish = region.onFinish
         var updates: [CGSize] = []
@@ -188,7 +189,77 @@ import Testing
         }
     }
 
-    @Test func scrollingOutsideAnOpenInstalledRowClosesItsDeleteAction() async throws {
+    @Test(arguments: [false, true])
+    func returningFromWorkspaceThenHorizontallySwipingKeepsTheSidebarAtTheTop(useNativeReset: Bool) async throws {
+        let (window, hosting, _) = try await dashboard(page: .marketplace)
+        defer { window.close() }
+        let runtime = hosting.rootView.runtime
+        let store = runtime.marketplace
+        defer { try? FileManager.default.removeItem(at: store.installer.home) }
+        for item in store.items.filter({ $0.kind == .skill && $0.agents.contains(.codex) }).prefix(10) {
+            try await store.installSkill(item, for: .codex, files: [SkillFile(path: "SKILL.md", data: Data("---\nname: \(item.name)\ndescription: Test package\n---".utf8))])
+        }
+        let sidebar = try #require(allScrollViews(hosting).first { $0.bounds.width < 250 })
+        // Wait for a real selected-workspace focus, not for an arbitrary delay.
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        while runtime.page != .packageWorkspace || sidebar.contentView.bounds.origin.y == 0 {
+            try #require(ContinuousClock.now < deadline, "The installed workspace should become focused before exercising return navigation.")
+            hosting.layoutSubtreeIfNeeded()
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        let workspaceViewport = try #require(findScrollView(hosting))
+        runtime.page = .marketplace
+        // A page value changes before SwiftUI has necessarily installed its
+        // new native viewport. Wait on the rendered navigation boundary.
+        let navigationDeadline = ContinuousClock.now.advanced(by: .seconds(5))
+        while findScrollView(hosting) === workspaceViewport {
+            try #require(ContinuousClock.now < navigationDeadline, "The library's native viewport should replace the workspace viewport.")
+            hosting.layoutSubtreeIfNeeded()
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        if useNativeReset {
+            let resetPoint = sidebar.convert(NSPoint(x: sidebar.bounds.midX, y: sidebar.bounds.midY), to: hosting)
+            window.sendEvent(try windowEvent(delta: 100_000, phase: .began, at: resetPoint, in: window, hosting: hosting))
+            window.sendEvent(try windowEvent(delta: 0, phase: .ended, at: resetPoint, in: window, hosting: hosting))
+        } else {
+            sidebar.contentView.scroll(to: .zero)
+            sidebar.reflectScrolledClipView(sidebar.contentView)
+        }
+        hosting.layoutSubtreeIfNeeded()
+        #expect(sidebar.contentView.bounds.origin.y == 0)
+        let (region, visibleBounds) = try await readySidebarRow(in: hosting)
+        let point = region.convert(NSPoint(x: visibleBounds.midX, y: visibleBounds.midY), to: hosting)
+        let beginEvent = try windowEvent(delta: 0, horizontal: -20, phase: .began, at: point, in: window, hosting: hosting)
+        let targets = allSwipeRegions(hosting).filter { $0.contains(beginEvent) }
+        #expect(targets.count == 1, "A point inside one visible row must not also hit adjacent sidebar rows.")
+        #expect(targets.first === region)
+        var updates: [ObjectIdentifier: [CGSize]] = [:]
+        var finishes: [ObjectIdentifier: Int] = [:]
+        for row in allSwipeRegions(hosting) {
+            let id = ObjectIdentifier(row)
+            let originalUpdate = row.onUpdate
+            let originalFinish = row.onFinish
+            row.onUpdate = { value in updates[id, default: []].append(value); return originalUpdate(value) }
+            row.onFinish = { value in finishes[id, default: 0] += 1; originalFinish(value) }
+        }
+        for phase in [NSEvent.Phase.began, .changed, .ended] {
+            window.sendEvent(try windowEvent(delta: 0, horizontal: phase == .ended ? 0 : -20,
+                                              phase: phase, at: point, in: window, hosting: hosting))
+        }
+        try await Task.sleep(for: .milliseconds(250))
+        hosting.layoutSubtreeIfNeeded()
+        let selectedRow = ObjectIdentifier(region)
+        #expect(updates[selectedRow]?.last?.width == -40)
+        #expect(finishes[selectedRow] == 1)
+        #expect(updates.keys.allSatisfy { $0 == selectedRow }, "Adjacent rows must not receive the gesture.")
+        #expect(finishes.keys.allSatisfy { $0 == selectedRow })
+        #expect(region.isRevealed, "The row must actually reveal its uninstall action to exercise the sidebar state update.")
+        #expect(runtime.page == .marketplace)
+        #expect(sidebar.contentView.bounds.origin.y == 0,
+                "A pending workspace focus must not reapply its old destination after the user returns to the library and swipes a row.")
+    }
+
+    @Test func outsideInputClosesAnInstalledRowsDeleteAction() async throws {
         let (window, hosting, _) = try await dashboard(page: .marketplace)
         defer { window.close() }
         let store = hosting.rootView.runtime.marketplace
@@ -197,8 +268,9 @@ import Testing
         try await store.installSkill(item, for: .codex, files: [SkillFile(path: "SKILL.md", data: Data("---\nname: \(item.name)\ndescription: Test package\n---".utf8))])
         try await Task.sleep(for: .milliseconds(150))
         hosting.layoutSubtreeIfNeeded()
-        let region = try #require(allSwipeRegions(hosting).first { $0.visibleRect.height >= 40 })
-        let point = region.convert(NSPoint(x: region.visibleRect.midX, y: region.visibleRect.midY), to: hosting)
+        let region = try #require(allSwipeRegions(hosting).first { $0.bounds.intersection($0.visibleRect).height >= 40 })
+        let visibleBounds = region.bounds.intersection(region.visibleRect)
+        let point = region.convert(NSPoint(x: visibleBounds.midX, y: visibleBounds.midY), to: hosting)
         for phase in [NSEvent.Phase.began, .changed, .ended] {
             window.sendEvent(try windowEvent(delta: 0, horizontal: phase == .ended ? 0 : -24,
                                               phase: phase, at: point, in: window, hosting: hosting))
@@ -218,6 +290,24 @@ import Testing
         window.sendEvent(try windowEvent(delta: 0, phase: .ended, at: point, in: window, hosting: hosting))
         try await Task.sleep(for: .milliseconds(50))
         #expect(!region.isRevealed)
+        for phase in [NSEvent.Phase.began, .changed, .ended] {
+            window.sendEvent(try windowEvent(delta: 0, horizontal: phase == .ended ? 0 : -24,
+                                              phase: phase, at: point, in: window, hosting: hosting))
+        }
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(region.isRevealed)
+        window.makeFirstResponder(nil)
+        let escape = try #require(NSEvent.keyEvent(with: .keyDown, location: .zero,
+            modifierFlags: [], timestamp: 0, windowNumber: window.windowNumber,
+            context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}",
+            isARepeat: false, keyCode: 53))
+        let selection = store.workspaceSelection
+        let currentPage = hosting.rootView.runtime.page
+        window.sendEvent(escape)
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(!region.isRevealed, "Escape should dismiss a revealed row even when keyboard focus is outside the sidebar.")
+        #expect(store.workspaceSelection == selection)
+        #expect(hosting.rootView.runtime.page == currentPage)
         for phase in [NSEvent.Phase.began, .changed, .ended] {
             window.sendEvent(try windowEvent(delta: 0, horizontal: phase == .ended ? 0 : -24,
                                               phase: phase, at: point, in: window, hosting: hosting))
@@ -347,6 +437,31 @@ import Testing
 
     private func allSwipeRegions(_ view: NSView) -> [SidebarSwipeRegionView] {
         ((view as? SidebarSwipeRegionView).map { [$0] } ?? []) + view.subviews.flatMap(allSwipeRegions)
+    }
+
+    private func readySidebarRow(in hosting: NSView) async throws -> (SidebarSwipeRegionView, NSRect) {
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        var previousID: ObjectIdentifier?
+        var previousFrame: NSRect?
+        while true {
+            try #require(ContinuousClock.now < deadline, "An enabled visible sidebar row should settle after navigation.")
+            hosting.layoutSubtreeIfNeeded()
+            if let region = allSwipeRegions(hosting).first(where: {
+                let visible = $0.bounds.intersection($0.visibleRect)
+                return $0.enabled && !$0.isHiddenOrHasHiddenAncestor && $0.window === hosting.window &&
+                    visible.width > 0 && visible.height >= 40
+            }) {
+                let visible = region.bounds.intersection(region.visibleRect)
+                let frame = region.convert(visible, to: hosting)
+                if previousID == ObjectIdentifier(region), previousFrame == frame { return (region, visible) }
+                previousID = ObjectIdentifier(region)
+                previousFrame = frame
+            } else {
+                previousID = nil
+                previousFrame = nil
+            }
+            try await Task.sleep(for: .milliseconds(10))
+        }
     }
 
     private func windowEvent(delta: Int32, horizontal: Int32 = 0, phase: NSEvent.Phase = .changed, at point: NSPoint, in window: NSWindow, hosting: NSView) throws -> NSEvent {

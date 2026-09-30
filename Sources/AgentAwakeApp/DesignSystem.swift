@@ -171,7 +171,7 @@ struct ProductButtonStyle: ButtonStyle {
             .overlay(RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(prominent ? Color.white.opacity(0.08) : ShellPalette.line))
             .clipShape(RoundedRectangle(cornerRadius: 10)).contentShape(RoundedRectangle(cornerRadius: 10))
-            .scaleEffect(reduceMotion ? 1 : configuration.isPressed ? 0.96 : hovered && enabled ? 1.025 : 1)
+            .scaleEffect(reduceMotion ? 1 : configuration.isPressed ? 0.985 : 1)
             .opacity(enabled ? 1 : 0.45)
             .onHover { hovered = $0 }
             .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.7), value: hovered)

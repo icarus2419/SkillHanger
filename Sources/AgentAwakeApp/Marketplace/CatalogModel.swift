@@ -12,6 +12,34 @@ enum CatalogKind: String, Codable { case skill, plugin }
 enum CatalogScope: String, CaseIterable, Identifiable {
     case all = "Browse", community = "Community", skills = "Skills", plugins = "Plugins", installed = "Installed"
     var id: String { rawValue }
+    var resultLabel: String {
+        switch self {
+        case .all: return "skills & plugins"
+        case .community: return "community skills"
+        case .skills: return "skills"
+        case .plugins: return "plugins"
+        case .installed: return "installed packages"
+        }
+    }
+    func resultLabel(for count: Int) -> String {
+        guard count == 1 else { return resultLabel }
+        switch self {
+        case .all: return "package"
+        case .community: return "community skill"
+        case .skills: return "skill"
+        case .plugins: return "plugin"
+        case .installed: return "installed package"
+        }
+    }
+    var detail: String {
+        switch self {
+        case .all: return "Publisher catalogs and independent creators, together."
+        case .community: return "Workflows shared by independent creators."
+        case .skills: return "Instructions and tools that teach your agent a workflow."
+        case .plugins: return "Packages managed by your agent’s plugin installer."
+        case .installed: return "Capabilities already available on this Mac."
+        }
+    }
 }
 enum CatalogSort: String, CaseIterable, Identifiable {
     case recommended = "Featured first", name = "Name A–Z", publisher = "Publisher"
@@ -93,12 +121,13 @@ struct CatalogSnapshot {
     let total: Int
 }
 
-struct CatalogQuery {
+struct CatalogQuery: Hashable {
     var search = ""
     var category: CatalogCategory? = nil
     var scope: CatalogScope = .all
     var agent: MarketplaceAgent = .codex
     var sort: CatalogSort = .recommended
+    var hasFilters: Bool { category != nil || !search.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     mutating func clearFilters() { search = ""; category = nil }
     func results(in items: [CatalogItem], installed: Set<String>) -> [CatalogItem] {
         snapshot(in: items, installed: installed).results

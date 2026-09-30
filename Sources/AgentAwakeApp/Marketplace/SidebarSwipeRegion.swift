@@ -32,11 +32,25 @@ final class SidebarSwipeRegionView: NSView {
     private var horizontal = false
     private var settleWork: DispatchWorkItem?
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        var ancestor = superview
+        while let view = ancestor {
+            if let dashboard = view as? DashboardHostingView {
+                dashboard.registerSwipeRegion(self)
+                break
+            }
+            ancestor = view.superview
+        }
+    }
+
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
     func contains(_ event: NSEvent) -> Bool {
-        event.window != nil && event.window === window && !isHiddenOrHasHiddenAncestor &&
-        visibleRect.contains(convert(event.locationInWindow, from: nil))
+        // SwiftUI can report the whole viewport as visibleRect. Limit the hit
+        // region to this row so adjacent packages cannot consume its gesture.
+        return event.window != nil && event.window === window && !isHiddenOrHasHiddenAncestor &&
+        bounds.intersection(visibleRect).contains(convert(event.locationInWindow, from: nil))
     }
 
     func handleScroll(_ event: NSEvent) -> Bool {

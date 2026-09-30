@@ -83,25 +83,27 @@ import UsageCore
 
     @Test func aRateLimitPreservesCachedDataAndTheServerRetryTime() async throws {
         let (defaults, prefs) = environment()
+        let checkedAt = Date()
         let old = ProviderUsage(provider: .openai, plan: "Test", session:
             UsageWindow(kind: .session, label: "5-hour", usedPercent: 40, resetsAt: nil, windowSeconds: 18000),
             weekly: nil, observedAt: Date().addingTimeInterval(-1000), source: .api)
         defaults.set(try JSONEncoder().encode([old]), forKey: "usageCache.v1")
         let store = UsageStore(prefs: prefs, defaults: defaults,
-                               logRoot: URL(fileURLWithPath: "/nonexistent-test-sessions")) { _, _ in
+                               logRoot: URL(fileURLWithPath: "/nonexistent-test-sessions"),
+                               clock: UsageClock(now: { checkedAt })) { _, _ in
             throw UsageError.rateLimited(retryAfter: 600)
         }
         defer { store.stop() }
         store.start()
-        try await Task.sleep(for: .milliseconds(100))
+        for _ in 0..<60 where !store.loading.isEmpty { try await Task.sleep(for: .milliseconds(50)) }
+        #expect(store.loading.isEmpty)
         let reading = store.reading(for: .openai)
         #expect(reading.percent == 60)
         #expect(reading.isStale)
         #expect(reading.usage?.observedAt == old.observedAt)
         #expect(reading.error == .rateLimited(retryAfter: 600))
         let retry = try #require(reading.nextCheckAt)
-        #expect(retry.timeIntervalSinceNow > 599)
-        #expect(retry.timeIntervalSinceNow <= 600)
+        #expect(retry == checkedAt.addingTimeInterval(600))
     }
 }
 

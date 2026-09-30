@@ -14,6 +14,7 @@ actor GitHubCatalog {
         session = URLSession(configuration: config, delegate: GitHubRedirectPolicy(), delegateQueue: nil)
     }
     func data(_ url: URL) async throws -> Data {
+        try Task.checkCancellation()
         guard url.scheme == "https", ["api.github.com", "raw.githubusercontent.com"].contains(url.host ?? ""),
               url.user == nil, url.password == nil else { throw MarketplaceError.invalid("Only public GitHub HTTPS sources are supported.") }
         let (bytes, response) = try await session.bytes(from: url)
@@ -24,6 +25,7 @@ actor GitHubCatalog {
         guard response.expectedContentLength <= 20_000_000 else { throw MarketplaceError.invalid("This GitHub response exceeds the download limit.") }
         var data = Data()
         for try await byte in bytes {
+            if data.count.isMultiple(of: 16_384) { try Task.checkCancellation() }
             guard data.count < 20_000_000 else { throw MarketplaceError.invalid("This GitHub response exceeds the download limit.") }
             data.append(byte)
         }
@@ -80,6 +82,7 @@ actor GitHubCatalog {
         }
         var items: [CatalogItem] = []
         for path in paths {
+            try Task.checkCancellation()
             let raw = try await raw(repository: repository, revision: sha, path: path)
             guard let text = String(data: raw, encoding: .utf8) else { continue }
             let metadata = try SkillMetadata.parse(text)

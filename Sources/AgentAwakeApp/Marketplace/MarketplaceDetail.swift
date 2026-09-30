@@ -4,11 +4,15 @@ import AppKit
 struct MarketplaceDetail: View {
     let item: CatalogItem
     @ObservedObject var store: MarketplaceStore
+    let agent: MarketplaceAgent
     @Environment(\.dismiss) private var dismiss
     @State private var removing = false
     @State private var sourceText: String?
     @State private var sourceError: String?
     @State private var loadingSource = false
+    init(item: CatalogItem, store: MarketplaceStore, agent: MarketplaceAgent? = nil) {
+        self.item = item; self.store = store; self.agent = agent ?? store.query.agent
+    }
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 12) {
@@ -40,12 +44,12 @@ struct MarketplaceDetail: View {
                             .font(.system(size: 12, weight: .medium)).foregroundStyle(ShellPalette.accent)
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        SectionHeading(title: "Install for \(store.query.agent.title)")
-                if item.kind == .skill {
+                        SectionHeading(title: "Install for \(agent.title)")
+                        if item.kind == .skill {
                             Text("The complete skill folder is downloaded at this revision. Its scripts are stored without being run during installation.").font(.system(size: 12)).foregroundStyle(ShellPalette.muted)
-                            Text("~/\(store.query.agent.skillsDirectory)/\(item.name)").font(.system(size: 11, design: .monospaced)).textSelection(.enabled)
+                            Text("~/\(agent.skillsDirectory)/\(item.name)").font(.system(size: 11, design: .monospaced)).textSelection(.enabled)
                         } else {
-                            Text("Installed at user scope by \(store.query.agent.title)'s plugin manager. Plugins can include skills, tools, and hooks. Account connections and any trust prompts are handled by your agent.").font(.system(size: 12)).foregroundStyle(ShellPalette.muted)
+                            Text("Installed at user scope by \(agent.title)'s plugin manager. Plugins can include skills, tools, and hooks. Account connections and any trust prompts are handled by your agent.").font(.system(size: 12)).foregroundStyle(ShellPalette.muted)
                         }
                         Text("Start a new agent session after installing. Review third-party source code before adding capabilities.").font(.system(size: 11)).foregroundStyle(ShellPalette.muted)
                     }
@@ -60,26 +64,29 @@ struct MarketplaceDetail: View {
             }
             Divider()
             HStack {
-                if store.isInstalled(item) {
-                    Button("Customize") { store.openWorkspace(item); dismiss() }.buttonStyle(ProductButtonStyle())
-                    if store.canRemove(item) {
+                if store.isInstalled(item, agent: agent) {
+                    if store.canRemove(item, agent: agent) {
                         Button("Remove…") { removing = true }.buttonStyle(ProductButtonStyle())
                     } else { Text("Existing installation · managed elsewhere").font(.system(size: 10)).foregroundStyle(ShellPalette.muted) }
                     if item.kind == .skill {
                         Button("Show in Finder") {
-                            if let url = try? store.installer.existingSkillURL(item, for: store.query.agent) { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                            if let url = try? store.installer.existingSkillURL(item, for: agent) { NSWorkspace.shared.activateFileViewerSelecting([url]) }
                         }.buttonStyle(ProductButtonStyle())
                     }
                 }
                 Spacer()
-                MarketplaceInstallButton(item: item, store: store)
+                if store.isInstalled(item, agent: agent) {
+                    Button { store.openWorkspace(item, agent: agent); dismiss() } label: { Label("Customize", systemImage: "slider.horizontal.3") }
+                        .buttonStyle(ProductButtonStyle(prominent: true))
+                        .disabled(store.isBusy(item, agent: agent))
+                } else { MarketplaceInstallButton(item: item, store: store, agent: agent) }
             }.padding(20)
         }
         .frame(width: 610, height: 590).background(ShellPalette.canvas).tint(ShellPalette.accent)
         .alert("Remove \(item.title)?", isPresented: $removing) {
             Button("Cancel", role: .cancel) {}
-            Button("Remove", role: .destructive) { store.remove(item) }
-        } message: { Text(store.externalSkills[store.query.agent]?.contains(item.id) == true ? "The skill folder will move to Trash. You can restore it from Finder." : "Remove this installation from \(store.query.agent.title). SkillHanger preserves locally edited skill files.") }
+            Button("Remove", role: .destructive) { store.remove(item, agent: agent) }
+        } message: { Text(store.externalSkills[agent]?.contains(item.id) == true ? "The skill folder will move to Trash. You can restore it from Finder." : "Remove this installation from \(agent.title). SkillHanger preserves locally edited skill files.") }
     }
     private func detail(_ label: String, _ value: String) -> some View {
         HStack(alignment: .top) {

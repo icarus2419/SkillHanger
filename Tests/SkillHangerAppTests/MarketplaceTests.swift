@@ -135,6 +135,7 @@ struct MarketplaceTests {
         let selection = try #require(store.workspaceSelection)
         store.packagePreferences.setMode("ultra", for: selection)
         let restarted = MarketplaceStore(home: home, defaults: defaults)
+        await restarted.reconcileSkills()
         #expect(restarted.workspaces.contains { $0.selection == selection })
         #expect(restarted.packagePreferences.mode(for: selection) == "ultra")
         #expect(restarted.packagePreferences.mode(for: PackageSelection(itemID: item.id, agent: .claude)) == "full")
@@ -145,7 +146,7 @@ struct MarketplaceTests {
         #expect(try Data(contentsOf: installed.appendingPathComponent("SKILL.md")) == files[0].data)
         try store.installer.removeSkill(item, for: .codex)
         #expect(!FileManager.default.fileExists(atPath: installed.path))
-        restarted.reconcileSkills()
+        await restarted.reconcileSkills()
         #expect(!restarted.workspaces.contains { $0.selection == selection })
     }
 

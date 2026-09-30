@@ -1,0 +1,30 @@
+name: Bug report
+description: Something isn't working
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected and what you saw instead. Screenshots welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: input
+    id: version
+    attributes:
+      label: SkillHanger version
+      placeholder: "0.2.0"
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "15.5"
+  - type: dropdown
+    id: agent
+    attributes:
+      label: Assistant
+      options: [Claude Code, Codex, Both]

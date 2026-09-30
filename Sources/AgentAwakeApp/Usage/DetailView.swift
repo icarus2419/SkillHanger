@@ -61,12 +61,13 @@ struct DetailView: View {
                         .font(.caption.weight(.medium))
                 }
                 .keyboardShortcut("r", modifiers: .command)
-                .disabled(!store.loading.isEmpty || prefs.providers.isEmpty)
-                .help("Check usage now; rate-limit waits are respected")
+                .disabled(!store.canRefresh)
+                .help(store.refreshHelp)
             }
         }
         .padding(16)
         .frame(width: 350)
+        .tint(ShellPalette.accent)
     }
 }
 

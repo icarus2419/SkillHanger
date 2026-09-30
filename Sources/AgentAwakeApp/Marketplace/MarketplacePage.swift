@@ -9,38 +9,54 @@ struct MarketplacePage: View, Equatable {
         let snapshot = store.snapshot
         VStack(alignment: .leading, spacing: 16) {
             toolbar
-            if let notice = store.catalogNotice { MarketplaceNotice(text: notice) }
+            if let notice = store.catalogNotice { MarketplaceNotice(text: notice, tone: .warning) }
             if let message = store.message {
                 MarketplaceNotice(text: message) { store.message = nil }
             }
             HStack(alignment: .top, spacing: 16) {
-                categories(counts: snapshot.counts, total: snapshot.total).frame(width: 138)
+                ScrollView {
+                    categories(counts: snapshot.counts, total: snapshot.total)
+                }.frame(width: 138).accessibilityLabel("Library categories")
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text("\(snapshot.results.count) \(store.query.scope == .installed ? "installed" : "available")")
+                        Text("\(snapshot.results.count) \(store.query.scope.resultLabel(for: snapshot.results.count))")
                             .font(.system(size: 12, weight: .semibold))
                         if store.checking { ProgressView().controlSize(.small); Text("Checking installs…").font(.system(size: 10)).foregroundStyle(ShellPalette.muted) }
                         Spacer()
                         Picker("Sort", selection: $store.query.sort) {
-                            Text("Popular").tag(CatalogSort.recommended)
+                            Text("Featured").tag(CatalogSort.recommended)
                             Text("Name").tag(CatalogSort.name)
                             Text("Publisher").tag(CatalogSort.publisher)
                         }.pickerStyle(.segmented).labelsHidden().frame(width: 210)
                             .accessibilityLabel("Sort library results")
                     }
+                    HStack(spacing: 8) {
+                        Text(store.query.category?.rawValue ?? store.query.scope.detail)
+                            .font(.system(size: 10)).foregroundStyle(ShellPalette.muted).lineLimit(1)
+                        Spacer(minLength: 0)
+                        if store.query.hasFilters {
+                            Button("Clear filters") { store.query.clearFilters() }
+                                .font(.system(size: 10, weight: .medium)).buttonStyle(.plain)
+                                .foregroundStyle(ShellPalette.accent).help("Clear the search and category")
+                        }
+                    }
                     ScrollView {
                         LazyVStack(spacing: 8) {
                             if snapshot.results.isEmpty {
-                                EmptyPanel(title: hasNoInstalls ? "Nothing installed for \(store.query.agent.title) yet" : store.query.scope == .installed ? "No matching installations" : "No matching skills or plugins",
-                                    detail: hasNoInstalls ? "Browse the library to add your first skill or plugin." : "Try another category, search, or agent.", symbol: hasNoInstalls ? "books.vertical" : "magnifyingglass",
+                                EmptyPanel(title: store.checking && store.query.scope == .installed ? "Finding your installed packages" : hasNoInstalls ? "Nothing installed for \(store.query.agent.title) yet" : "No matching \(store.query.scope.resultLabel)",
+                                    detail: store.checking && store.query.scope == .installed ? "Your local skills are checked first, followed by the agent’s plugin list." : hasNoInstalls ? "Browse the library to add your first skill or plugin." : "Try a broader search or another category for \(store.query.agent.title).", symbol: hasNoInstalls ? "books.vertical" : "magnifyingglass",
                                     actionTitle: hasNoInstalls ? "Browse library" : "Clear filters", action: { if hasNoInstalls { store.browse() } else { store.query.clearFilters() } })
-                                    .padding(.vertical, 28)
+                                    .padding(.vertical, 16)
                             }
                             ForEach(snapshot.results) { item in
-                                MarketplaceRow(item: item, store: store) { selected = item }
+                                let agent = store.query.agent
+                                MarketplaceRow(item: item, state: store.rowState(item), showDetail: { selected = item },
+                                    install: { store.install(item, agent: agent) },
+                                    customize: { store.openWorkspace(item, agent: agent) },
+                                    cancel: { store.cancel(item, agent: agent) }).equatable()
                             }
                         }.padding(.trailing, 4).padding(.bottom, 16)
-                    }.accessibilityLabel("Skill Library results")
+                    }.id(store.query).accessibilityLabel("Skill Library results")
                 }
             }
             .frame(maxHeight: .infinity)
@@ -49,9 +65,9 @@ struct MarketplacePage: View, Equatable {
         .frame(maxWidth: .infinity)
         .task { await store.start() }
         .onChange(of: store.query.scope) { scope in
-            if scope == .installed { Task { await store.reconcile() } }
+            if scope == .installed { Task { await store.reconcile(force: false) } }
         }
-        .onChange(of: store.query.agent) { _ in Task { await store.reconcile() } }
+        .onChange(of: store.query.agent) { _ in Task { await store.reconcile(force: false) } }
         .sheet(item: $selected) { item in MarketplaceDetail(item: item, store: store) }
     }
 
@@ -69,12 +85,13 @@ struct MarketplacePage: View, Equatable {
                         .accessibilityLabel("Focus library search").help("Search library (⌘F)")
                     TextField("Search skills, plugins, or publishers", text: $store.query.search)
                         .textFieldStyle(.plain).focused($searchFocused).accessibilityLabel("Search Skill Library")
+                        .onExitCommand { store.query.search = ""; searchFocused = false }
                     if !store.query.search.isEmpty {
                         Button { store.query.search = "" } label: { Image(systemName: "xmark.circle.fill") }
                             .buttonStyle(.plain).accessibilityLabel("Clear library search")
                     }
                 }.padding(12).background(ShellPalette.surface, in: RoundedRectangle(cornerRadius: 10))
-                    .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(ShellPalette.line))
+                    .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(searchFocused ? ShellPalette.accent : ShellPalette.line).allowsHitTesting(false))
                 VStack(alignment: .leading, spacing: 5) {
                     Text("INSTALL FOR").font(.system(size: 9, weight: .semibold)).tracking(0.8).foregroundStyle(ShellPalette.muted)
                     Picker("Agent", selection: $store.query.agent) {
@@ -87,7 +104,8 @@ struct MarketplacePage: View, Equatable {
                     ForEach(CatalogScope.allCases) { Text($0.rawValue).tag($0) }
                 }.pickerStyle(.segmented).labelsHidden().frame(maxWidth: 410).accessibilityLabel("Library section")
                 Spacer(minLength: 8)
-                Text("\(store.items.count) in the catalog").font(.system(size: 10)).foregroundStyle(ShellPalette.muted)
+                Label("\(store.items.count) packages", systemImage: "shippingbox")
+                    .font(.system(size: 10)).foregroundStyle(ShellPalette.muted)
             }
         }
     }
@@ -127,22 +145,47 @@ struct MarketplacePage: View, Equatable {
 
 struct MarketplaceNotice: View {
     let text: String
+    var tone: Tone = .information
     var dismiss: (() -> Void)? = nil
+    @State private var showingDetails = false
+    enum Tone { case information, warning }
+    private var color: Color { tone == .warning ? ShellPalette.warning : ShellPalette.accent }
+    private var summary: String {
+        let first = text.components(separatedBy: .newlines).first ?? text
+        return first.count > 180 ? String(first.prefix(180)) + "…" : first
+    }
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: "info.circle").foregroundStyle(ShellPalette.accent)
-            Text(text).font(.system(size: 11)).fixedSize(horizontal: false, vertical: true)
+            Image(systemName: tone == .warning ? "exclamationmark.circle" : "info.circle").foregroundStyle(color)
+            Text(summary).font(.system(size: 11)).fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 4)
+            if text != summary {
+                Button("Details") { showingDetails = true }.buttonStyle(.plain)
+                    .font(.system(size: 11, weight: .medium)).foregroundStyle(color)
+                    .popover(isPresented: $showingDetails) {
+                        ScrollView {
+                            Text(text).font(.system(size: 12)).textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading).padding(20)
+                        }.frame(width: 440, height: 280)
+                    }
+            }
             if let dismiss { Button(action: dismiss) { Image(systemName: "xmark") }.buttonStyle(.plain).accessibilityLabel("Dismiss library notice") }
-        }.padding(12).background(ShellPalette.tint, in: RoundedRectangle(cornerRadius: 10))
+        }.padding(12).background(color.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
     }
 }
 
 struct MarketplaceRefreshButton: View {
     @ObservedObject var store: MarketplaceStore
+    private var title: String {
+        guard store.refreshing else { return "Refresh catalog" }
+        return store.canCancelRefresh ? "\(store.refreshedSourceCount)/\(store.refreshSourceCount) · Cancel" : "Finishing…"
+    }
     var body: some View {
-        ActionButton(title: store.refreshing ? "Refreshing…" : "Refresh catalog", symbol: "arrow.clockwise") {
-            Task { await store.refresh() }
-        }.disabled(store.refreshing || store.preview).keyboardShortcut("r", modifiers: .command)
+        ActionButton(title: title, symbol: store.refreshing && store.canCancelRefresh ? "xmark" : "arrow.clockwise") {
+            if store.refreshing { store.cancelRefresh() }
+            else { Task { await store.refresh() } }
+        }.disabled(store.preview || (store.refreshing && !store.canCancelRefresh))
+            .keyboardShortcut("r", modifiers: .command)
+            .help(store.refreshing ? store.canCancelRefresh ? "Cancel refresh and keep the saved catalog" : "Finishing the catalog update" : "Check GitHub for catalog updates (⌘R)")
     }
 }

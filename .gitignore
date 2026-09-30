@@ -12,6 +12,9 @@ tasks/evidence/marketplace/*
 tasks/evidence/marketplace-expansion/*
 !tasks/evidence/marketplace-expansion/package-logo-provenance.json
 
+# Private marketing and ad assets
+marketing/
+
 # Local editor, OS, and Python files
 .DS_Store
 __pycache__/
@@ -38,6 +41,8 @@ HANDOFF.md
 SPEC.md
 *.md
 !README.md
+!CONTRIBUTING.md
+!SECURITY.md
 !Resources/ClosedLidSetup.md
 tasks/*
 !tasks/evidence/

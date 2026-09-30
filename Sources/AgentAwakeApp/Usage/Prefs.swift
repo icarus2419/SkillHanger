@@ -66,6 +66,8 @@ enum Theme: String, CaseIterable {
 
 /// User settings, persisted to UserDefaults as they change.
 final class Prefs: ObservableObject {
+    static let defaultRefreshMinutes = 4
+    static let refreshOptions = [1, 2, 4, 5, 10, 15, 30]
     private let defaults: UserDefaults
 
     @Published var showClaude: Bool { didSet { save(showClaude, "showClaude") } }
@@ -87,6 +89,13 @@ final class Prefs: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        // Update existing fast polling once, including imported UsageBar settings.
+        // Subsequent deliberate choices are kept across launches.
+        if !defaults.bool(forKey: "skillhanger.refreshCadence.v2") {
+            let saved = defaults.object(forKey: "refreshMinutes") as? Int ?? Self.defaultRefreshMinutes
+            defaults.set(max(Self.defaultRefreshMinutes, saved), forKey: "refreshMinutes")
+            defaults.set(true, forKey: "skillhanger.refreshCadence.v2")
+        }
         func value<T>(_ key: String, _ fallback: T) -> T { defaults.object(forKey: key) as? T ?? fallback }
         func choice<T: RawRepresentable>(_ key: String, _ fallback: T) -> T where T.RawValue == String {
             defaults.string(forKey: key).flatMap(T.init(rawValue:)) ?? fallback
@@ -106,7 +115,8 @@ final class Prefs: ObservableObject {
         widgetVisible = value("widgetVisible", true)
         showMenuBar = value("showMenuBar", true)
         alerts = value("alerts", true)
-        refreshMinutes = value("refreshMinutes", 2)
+        let savedMinutes = value("refreshMinutes", Self.defaultRefreshMinutes)
+        refreshMinutes = (1...60).contains(savedMinutes) ? savedMinutes : Self.defaultRefreshMinutes
     }
 
     private func save(_ value: Any, _ key: String) {

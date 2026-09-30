@@ -69,7 +69,7 @@ final class UsageMenuBarController: NSObject {
         if popover.isShown {
             popover.performClose(nil)
         } else if let button = statusItem.button {
-            store.refresh()
+            store.checkForUpdates()
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         }
     }

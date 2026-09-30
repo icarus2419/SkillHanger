@@ -2,6 +2,10 @@ import AppKit
 import Combine
 import UsageCore
 
+struct UsageClock {
+    var now: () -> Date = Date.init
+}
+
 /// Everything one battery needs to draw itself.
 struct Reading {
     var provider: Provider
@@ -30,6 +34,7 @@ final class UsageStore: ObservableObject {
     private let prefs: Prefs
     private let defaults: UserDefaults
     private let fetchUsage: FetchUsage
+    private let clock: UsageClock
     private let logRoot: URL?
     private let session: URLSession
     private let workspaceNotifications: NotificationCenter
@@ -50,9 +55,19 @@ final class UsageStore: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
 
     private static let cacheKey = "usageCache.v1"
+    private static let pollingKey = "usagePolling.v1"
+    private static let manualCooldown: TimeInterval = 60
+
+    private struct PollingState: Codable {
+        var lastFetch: [Provider: Date]
+        var retryAt: [Provider: Date]
+        var failures: [Provider: Int]
+        var rateLimited: Set<Provider>
+    }
 
     init(prefs: Prefs, defaults: UserDefaults = .standard, logRoot: URL? = nil,
          workspaceNotifications: NotificationCenter = NSWorkspace.shared.notificationCenter,
+         clock: UsageClock = UsageClock(),
          initialUsage: [ProviderUsage] = [],
          initialErrors: [Provider: UsageError] = [:], initialLoading: Set<Provider> = [],
          fetchUsage: @escaping FetchUsage = { provider, session in
@@ -67,14 +82,17 @@ final class UsageStore: ObservableObject {
         self.workspaceNotifications = workspaceNotifications
         self.logReader = CodexLocalLog.Reader(root: logRoot)
         self.fetchUsage = fetchUsage
+        self.clock = clock
+        now = clock.now()
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 20
         config.urlCache = nil
         config.httpCookieStorage = nil
         session = URLSession(configuration: config)
         loadCache()
+        loadPollingState()
         for entry in initialUsage { usage[entry.provider] = entry }
-        errors = initialErrors
+        errors.merge(initialErrors) { _, new in new }
         loading = initialLoading
     }
 
@@ -86,7 +104,7 @@ final class UsageStore: ObservableObject {
     func start() {
         guard ticker == nil else { return }
         let timer = Timer(timeInterval: 15, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.tick() }
+            MainActor.assumeIsolated { self?.checkForUpdates() }
         }
         timer.tolerance = 5
         RunLoop.main.add(timer, forMode: .common)
@@ -108,9 +126,9 @@ final class UsageStore: ObservableObject {
             observers.append(center.addObserver(forName: wake, object: nil, queue: .main) { [weak self] _ in
                 MainActor.assumeIsolated { _ = self?.sleepReasons.remove(reason) }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
-                    guard let self, !self.asleep else { return }
+                    guard let self, self.ticker != nil, !self.asleep else { return }
                     self.updateWatcher()
-                    self.refresh()
+                    self.checkForUpdates()
                 }
             })
         }
@@ -126,12 +144,12 @@ final class UsageStore: ObservableObject {
                     self.tasks[provider]?.cancel()
                 }
                 self.updateWatcher()
-                self.tick()
+                self.checkForUpdates()
             }
             .store(in: &cancellables)
 
         updateWatcher()
-        tick()
+        checkForUpdates()
     }
 
     func stop() {
@@ -151,14 +169,14 @@ final class UsageStore: ObservableObject {
     /// Manual refresh: ignores the poll interval but still honours rate-limit back-off.
     func refresh() {
         guard !asleep else { return }
-        now = Date()
+        now = clock.now()
         for provider in prefs.providers { fetchIfDue(provider, force: true) }
         pollCodexLog()
     }
 
-    private func tick() {
+    func checkForUpdates() {
         guard !asleep else { return }
-        now = Date()
+        now = clock.now()
         updateWatcher()
         for provider in prefs.providers { fetchIfDue(provider, force: false) }
         pollCodexLog()
@@ -168,7 +186,7 @@ final class UsageStore: ObservableObject {
 
     private func fetchIfDue(_ provider: Provider, force: Bool) {
         guard !loading.contains(provider) else { return }
-        if force, let last = lastFetch[provider], now.timeIntervalSince(last) < 20 { return }
+        if force, let last = lastFetch[provider], now.timeIntervalSince(last) < Self.manualCooldown { return }
         if let retry = retryAt[provider], retry > now {
             let rateLimited: Bool
             if case .rateLimited = errors[provider] { rateLimited = true } else { rateLimited = false }
@@ -182,7 +200,8 @@ final class UsageStore: ObservableObject {
 
     private func fetch(_ provider: Provider) {
         loading.insert(provider)
-        lastFetch[provider] = Date()
+        lastFetch[provider] = clock.now()
+        savePollingState()
         let session = session
         tasks[provider] = Task {
             defer {
@@ -195,6 +214,7 @@ final class UsageStore: ObservableObject {
                 errors[provider] = nil
                 failures[provider] = 0
                 retryAt[provider] = nil
+                savePollingState()
                 accept(result)
             } catch {
                 guard !Task.isCancelled else { return }
@@ -210,15 +230,16 @@ final class UsageStore: ObservableObject {
         switch error {
         case .rateLimited(let retryAfter):
             let backoff = min(interval * pow(2, Double(count)), 30 * 60)
-            retryAt[provider] = Date().addingTimeInterval(max(retryAfter ?? 0, backoff))
+            retryAt[provider] = clock.now().addingTimeInterval(max(retryAfter ?? 0, backoff))
         case .network, .badResponse:
             // Retry sooner than a full interval the first time, then back off.
             let backoff = min(30 * pow(2, Double(count - 1)), max(interval, 15 * 60))
-            retryAt[provider] = Date().addingTimeInterval(backoff)
+            retryAt[provider] = clock.now().addingTimeInterval(backoff)
         case .notSignedIn, .tokenExpired, .unauthorized:
             // Rechecking the local login is cheap; keep the normal cadence so sign-ins show up quickly.
             retryAt[provider] = nil
         }
+        savePollingState()
         if provider == .openai { pollCodexLog() }
     }
 
@@ -228,7 +249,7 @@ final class UsageStore: ObservableObject {
         var updated = new
         if updated.plan == nil { updated.plan = usage[new.provider]?.plan }
         guard updated != usage[new.provider] else { return }
-        now = Date()
+        now = clock.now()
         usage[new.provider] = updated
         saveCache()
     }
@@ -273,6 +294,23 @@ final class UsageStore: ObservableObject {
         prefs.providers.compactMap { usage[$0]?.observedAt }.max()
     }
 
+    /// Keep every refresh control honest about the same cooldown and retry gate.
+    var canRefresh: Bool {
+        prefs.providers.contains { provider in
+            guard !loading.contains(provider), !asleep else { return false }
+            if let last = lastFetch[provider], now.timeIntervalSince(last) < Self.manualCooldown { return false }
+            if case .rateLimited = errors[provider], let retry = retryAt[provider], retry > now { return false }
+            return true
+        }
+    }
+
+    var refreshHelp: String {
+        if !loading.isEmpty { return "Checking your plan allowance" }
+        if prefs.providers.isEmpty { return "Enable a provider in Usage or Settings" }
+        if !canRefresh { return "Automatic checks continue. Recent requests and provider retry windows are respected." }
+        return "Check usage now (⌘R)"
+    }
+
     // MARK: Cache
 
     private func loadCache() {
@@ -285,5 +323,25 @@ final class UsageStore: ObservableObject {
         if let data = try? JSONEncoder().encode(Array(usage.values)) {
             defaults.set(data, forKey: Self.cacheKey)
         }
+    }
+
+    private func loadPollingState() {
+        guard let data = defaults.data(forKey: Self.pollingKey),
+              let saved = try? JSONDecoder().decode(PollingState.self, from: data) else { return }
+        // Discard impossible attempt dates after a system clock correction.
+        lastFetch = saved.lastFetch.filter { $0.value <= now }
+        retryAt = saved.retryAt.filter { $0.value > now && $0.value.timeIntervalSince(now) <= 86_400 }
+        failures = saved.failures.mapValues { min(10, max(0, $0)) }
+        for provider in saved.rateLimited where retryAt[provider] != nil {
+            errors[provider] = .rateLimited(retryAfter: nil)
+        }
+    }
+
+    private func savePollingState() {
+        let rateLimited = Set(errors.compactMap { provider, error in
+            if case .rateLimited = error { return provider }; return nil
+        })
+        let saved = PollingState(lastFetch: lastFetch, retryAt: retryAt, failures: failures, rateLimited: rateLimited)
+        if let data = try? JSONEncoder().encode(saved) { defaults.set(data, forKey: Self.pollingKey) }
     }
 }

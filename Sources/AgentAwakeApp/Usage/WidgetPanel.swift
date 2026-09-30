@@ -354,7 +354,7 @@ final class WidgetController: NSObject {
     func showDetail() {
         if !panel.isVisible { show() }
         guard !popover.isShown else { return }
-        store.refresh()
+        store.checkForUpdates()
         // Present only usage details. Activating this regular app here would also
         // bring its dashboard forward over the app the user is working in.
         let visible = (panel.screen ?? NSScreen.main)?.visibleFrame ?? .zero

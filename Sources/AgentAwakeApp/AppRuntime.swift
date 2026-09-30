@@ -56,6 +56,7 @@ final class AppRuntime: NSObject, ObservableObject {
     @Published var page: AppPage = .marketplace
     @Published var navigationTarget: String?
     @Published var notice: String?
+    @Published private(set) var feedback: String?
     @Published private(set) var launchAtLogin = LoginItem.isEnabled
     private var window: NSWindow?
     private var widget: WidgetController?
@@ -63,6 +64,7 @@ final class AppRuntime: NSObject, ObservableObject {
     private let notifier: Notifier
     private var cancellables: Set<AnyCancellable> = []
     private var started = false
+    private var feedbackTask: Task<Void, Never>?
 
     init(preview: Bool = false, marketplaceHome: URL? = nil) {
         let args = ProcessInfo.processInfo.arguments
@@ -113,18 +115,24 @@ final class AppRuntime: NSObject, ObservableObject {
         if let index = args.firstIndex(of: "--page"), args.indices.contains(index + 1) {
             page = AppPage(rawValue: args[index + 1]) ?? .marketplace
         }
-        marketplace.objectWillChange.receive(on: RunLoop.main).sink { [weak self] in self?.objectWillChange.send() }.store(in: &cancellables)
+        marketplace.objectWillChange.receive(on: RunLoop.main).sink { [weak self] in
+            guard let self, self.page == .packageWorkspace else { return }
+            self.objectWillChange.send()
+        }.store(in: &cancellables)
         marketplace.$removalFailure.compactMap { $0 }.receive(on: RunLoop.main).sink { [weak self] in self?.notice = $0 }.store(in: &cancellables)
         marketplace.$workspaceSelection.dropFirst().receive(on: RunLoop.main).sink { [weak self] selection in
             if selection != nil { self?.page = .packageWorkspace }
             else if self?.page == .packageWorkspace { self?.page = .installed }
         }.store(in: &cancellables)
-        for publisher in [prefs.objectWillChange.eraseToAnyPublisher(),
-                          monitor.objectWillChange.eraseToAnyPublisher(),
-                          usage.objectWillChange.eraseToAnyPublisher()] {
-            publisher.receive(on: RunLoop.main).sink { [weak self] in self?.objectWillChange.send() }
-                .store(in: &cancellables)
-        }
+        prefs.objectWillChange.receive(on: RunLoop.main).sink { [weak self] in self?.objectWillChange.send() }.store(in: &cancellables)
+        monitor.objectWillChange.receive(on: RunLoop.main).sink { [weak self] in
+            guard let self, [.overview, .awake, .activity, .settings].contains(self.page) else { return }
+            self.objectWillChange.send()
+        }.store(in: &cancellables)
+        usage.objectWillChange.receive(on: RunLoop.main).sink { [weak self] in
+            guard let self, [.overview, .usage, .settings].contains(self.page) else { return }
+            self.objectWillChange.send()
+        }.store(in: &cancellables)
     }
 
     func start() {
@@ -155,6 +163,7 @@ final class AppRuntime: NSObject, ObservableObject {
     }
 
     func stop() {
+        feedbackTask?.cancel()
         usage.stop()
         monitor.stop()
         // Hiding at shutdown must not alter the persisted visibility setting.
@@ -170,7 +179,6 @@ final class AppRuntime: NSObject, ObservableObject {
 
     func open(_ page: AppPage = .marketplace, activate: Bool = true) {
         self.page = page
-        if page == .marketplace && !isPreview { marketplace.browse() }
         if window == nil {
             let small = ProcessInfo.processInfo.arguments.contains("--compact-preview")
             let created = DashboardWindow(contentRect: NSRect(x: 0, y: 0, width: small ? 940 : 1180, height: small ? 660 : 820),
@@ -231,7 +239,13 @@ final class AppRuntime: NSObject, ObservableObject {
     func copy(_ text: String) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
-        notice = "Copied to clipboard."
+        feedbackTask?.cancel()
+        feedback = "Copied to clipboard"
+        feedbackTask = Task { [weak self] in
+            do { try await Task.sleep(for: .seconds(2)) }
+            catch { return }
+            self?.feedback = nil
+        }
     }
 
     var cliPath: String {

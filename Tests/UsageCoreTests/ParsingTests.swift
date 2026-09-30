@@ -145,12 +145,12 @@ private let now = Date(timeIntervalSince1970: 1_790_460_000) // 2026-09-26T22:40
 }
 
 @Suite struct LiveLogUpdates {
-    @Test func watcherNoticesAChangedSessionLog() async throws {
+    @Test @MainActor func watcherNoticesAChangedSessionLog() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
-        await confirmation("local log change delivered") { confirm in
+        try await confirmation("local log change delivered") { confirm in
             var delivered = false
             let watcher = CodexLogWatcher(root: root) {
                 if !delivered {
@@ -160,8 +160,10 @@ private let now = Date(timeIntervalSince1970: 1_790_460_000) // 2026-09-26T22:40
             }
             defer { watcher.stop() }
             #expect(watcher.start())
-            try? fixture("codex-rollout.jsonl").write(to: root.appendingPathComponent("rollout.jsonl"))
-            try? await Task.sleep(for: .seconds(2))
+            try fixture("codex-rollout.jsonl").write(to: root.appendingPathComponent("rollout.jsonl"))
+            // Wait for the callback itself. Native drawing can delay the main
+            // queue beyond a fixed sleep while this integration suite runs.
+            for _ in 0..<100 where !delivered { try await Task.sleep(for: .milliseconds(50)) }
         }
     }
 }

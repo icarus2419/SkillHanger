@@ -89,14 +89,19 @@ struct InstalledPackageSidebar: View {
                         }
                     }.padding(.trailing, 16).padding(.bottom, 4)
                 }.accessibilityLabel("Installed packages by agent")
-                    .onChange(of: store.workspaceSelection) { selection in
-                        guard let selection, store.workspaces.contains(where: { $0.selection == selection }) else { return }
+                    .task(id: page == .packageWorkspace ? store.workspaceSelection : nil) {
+                        guard page == .packageWorkspace, let selection = store.workspaceSelection,
+                              store.workspaces.contains(where: { $0.selection == selection }) else { return }
+                        do { try await Task.sleep(for: .milliseconds(80)) }
+                        catch { return }
+                        guard page == .packageWorkspace, store.workspaceSelection == selection,
+                              revealedSelection == nil else { return }
                         if !groups.flatMap(\.packages).contains(where: { $0.selection == selection }) { search = "" }
-                        Task { @MainActor in
-                            try? await Task.sleep(for: .milliseconds(80))
-                            guard store.workspaceSelection == selection else { return }
-                            proxy.scrollTo(selection.id, anchor: .center)
-                        }
+                        // Focus once, without leaving a native scroll animation
+                        // that could resume after the user returns to the library.
+                        var transaction = Transaction(animation: nil)
+                        transaction.disablesAnimations = true
+                        withTransaction(transaction) { proxy.scrollTo(selection.id, anchor: .center) }
                     }
             }
         }.padding(.horizontal, 12).padding(.top, 16)
