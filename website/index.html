@@ -51,8 +51,8 @@
       </a>
       <nav aria-label="Primary">
         <a href="#features">Features</a>
-        <a href="#tour">Tour</a>
-        <a href="#ads">Ads</a>
+                <a href="#batteries">UsageBar</a>
+        <a href="#awake">Agent Awake</a>
         <a href="#install">Install</a>
         <a href="#privacy">Privacy</a>
       </nav>
@@ -78,7 +78,7 @@
             </a>
             <a class="btn btn-ghost" href="https://github.com/icarus2419/SkillHanger">View on GitHub</a>
           </div>
-          <p class="meta">macOS 13+ <i>·</i> Claude Code + Codex <i>·</i> Native Swift</p>
+          <p class="meta"><span data-version>v0.2.0</span> <i>·</i> macOS 13+ <i>·</i> Claude Code + Codex <i>·</i> Native Swift</p>
         </div>
 
         <div class="hero-stage" aria-hidden="true">
@@ -152,22 +152,43 @@
       </div>
     </section>
 
-    <!-- ADS -->
-    <section class="section" id="ads">
-      <div class="wrap">
-        <p class="eyebrow">SkillHanger <i>·</i> TikTok <i>·</i> 1080×1920 <i>·</i> 15 s</p>
-        <h2 class="display">Two ads, <em>one logo moment.</em></h2>
-        <p class="sub">Press play with sound on. Both end on the same particle-to-3D logo reveal. The music and effects are real recorded instruments and foley.</p>
-        <div class="ads">
-          <figure class="ad ad-cream">
-            <video controls playsinline preload="none" poster="assets/video/01-is-it-skilled.jpg" src="assets/video/01-is-it-skilled.mp4" aria-label="Ad 1: Is it skilled?"></video>
-            <figcaption><span>01</span> Is it skilled? <i>·</i> 120 BPM</figcaption>
-          </figure>
-          <figure class="ad ad-crimson">
-            <video controls playsinline preload="none" poster="assets/video/02-every-skill-on-tap.jpg" src="assets/video/02-every-skill-on-tap.mp4" aria-label="Ad 2: Every skill. On tap."></video>
-            <figcaption><span>02</span> Every skill. On tap. <i>·</i> 128 BPM</figcaption>
-          </figure>
+    <!-- BATTERIES -->
+    <section class="section" id="batteries">
+      <div class="wrap split">
+        <div class="split-copy">
+          <p class="eyebrow">UsageBar <i>·</i> Menu bar <i>·</i> Desktop</p>
+          <h2 class="display">Your limits, <em>always in view.</em></h2>
+          <p class="sub">Two small batteries show how much allowance you have left, on your desktop and in the menu bar. Click one for a compact popup with session and weekly limits and their reset times.</p>
+          <ul class="facts">
+            <li><b>Session, weekly, or lowest</b><span>Choose what each battery tracks in Settings.</span></li>
+            <li><b>Readings stay fresh</b><span>The app checks your provider every four minutes, and local Codex logs fill in between checks.</span></li>
+            <li><b>Never spends tokens</b><span>It reads allowance metadata only and never runs a model.</span></li>
+          </ul>
         </div>
+        <figure class="split-art">
+          <img class="art-popup" src="assets/img/popup-dark.png" width="700" height="1228" loading="lazy" alt="SkillHanger menu bar popup showing remaining session and weekly allowance">
+        </figure>
+      </div>
+    </section>
+
+    <!-- LONG RUNS -->
+    <section class="section" id="awake">
+      <div class="wrap">
+        <p class="eyebrow">Agent Awake <i>·</i> Command-line helper</p>
+        <h2 class="display">Walk away. <em>It keeps working.</em></h2>
+        <p class="sub">Run a task through the bundled <code>agent-awake</code> helper, and your Mac stays out of idle sleep until the task completes, fails, or is cancelled. Your terminal sees the same input and output as before. Interactive sessions use provider hooks instead.</p>
+        <div class="term term-tabs">
+          <div class="term-bar">
+            <i></i><i></i><i></i>
+            <div class="seg" role="tablist" aria-label="Assistant">
+              <button role="tab" aria-selected="true" data-cmd="claude">Claude Code</button>
+              <button role="tab" aria-selected="false" data-cmd="codex">Codex</button>
+            </div>
+            <button class="copy" type="button" data-copy-from="awakeCmd">Copy</button>
+          </div>
+<pre><code id="awakeCmd" data-claude="/Applications/SkillHanger.app/Contents/MacOS/agent-awake run claude -- claude -p --output-format json &quot;your task&quot;" data-codex="/Applications/SkillHanger.app/Contents/MacOS/agent-awake run codex -- codex exec --json &quot;your task&quot;">/Applications/SkillHanger.app/Contents/MacOS/agent-awake run claude -- claude -p --output-format json "your task"</code></pre>
+        </div>
+        <p class="note">Turn on <b>Prevent idle sleep during tasks</b> in Agent Awake. Closing a laptop lid isn't the same as idle sleep. That needs an optional helper, which you install and enable yourself. See the <a href="https://github.com/icarus2419/SkillHanger/blob/main/Resources/ClosedLidSetup.md">closed-lid guide</a>.</p>
       </div>
     </section>
 
@@ -177,7 +198,7 @@
         <p class="eyebrow">Install <i>·</i> macOS 13+ <i>·</i> Free</p>
         <h2 class="display">Up and running <em>in a minute.</em></h2>
         <ol class="steps">
-          <li><span class="n">01</span><b>Download</b><p>Grab the latest <code>SkillHanger-x.y.z.zip</code> from <a href="https://github.com/icarus2419/SkillHanger/releases/latest">Releases</a>.</p></li>
+          <li><span class="n">01</span><b>Download</b><p>Grab the latest <code data-zip>SkillHanger-0.2.0.zip</code> from <a href="https://github.com/icarus2419/SkillHanger/releases/latest">Releases</a>.</p></li>
           <li><span class="n">02</span><b>Unzip &amp; drag</b><p>Move SkillHanger into your Applications folder.</p></li>
           <li><span class="n">03</span><b>Open it</b><p>It isn't notarized yet, so the first time: <b>right-click → Open → Open</b>.</p></li>
         </ol>

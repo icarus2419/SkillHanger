@@ -9,7 +9,7 @@ onScroll();
 const io = new IntersectionObserver((entries) => {
   for (const e of entries) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
 }, { rootMargin: '0px 0px -8% 0px' });
-document.querySelectorAll('.section .display, .section .sub, .card, .minis li, .tour, .ad, .steps li, .term, .checks li, .closer-card')
+document.querySelectorAll('.section .display, .section .sub, .card, .minis li, .tour, .split-copy, .split-art, .facts li, .steps li, .term, .checks li, .closer-card')
   .forEach((el, i) => { el.classList.add('reveal'); el.style.transitionDelay = `${(i % 3) * 80}ms`; io.observe(el); });
 
 const tabs = [...document.querySelectorAll('.tabs [role="tab"]')];
@@ -36,11 +36,27 @@ tabs.forEach((t, i) => {
 });
 
 document.querySelectorAll('.copy').forEach((b) => b.addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
+  const text = b.dataset.copyFrom ? document.getElementById(b.dataset.copyFrom).textContent : b.dataset.copy;
+  try { await navigator.clipboard.writeText(text); b.textContent = 'Copied'; }
   catch { b.textContent = 'Press ⌘C'; }
   setTimeout(() => { b.textContent = 'Copy'; }, 1600);
 }));
 
-// Only one ad plays at a time.
-const videos = document.querySelectorAll('.ad video');
-videos.forEach((v) => v.addEventListener('play', () => videos.forEach((o) => o !== v && o.pause())));
+// Agent Awake command: switch between assistants.
+const cmd = document.getElementById('awakeCmd');
+const segs = [...document.querySelectorAll('.seg [role="tab"]')];
+segs.forEach((b) => b.addEventListener('click', () => {
+  segs.forEach((o) => o.setAttribute('aria-selected', String(o === b)));
+  cmd.textContent = cmd.dataset[b.dataset.cmd];
+}));
+
+// Keep the version label current with the latest GitHub release.
+fetch('https://api.github.com/repos/icarus2419/SkillHanger/releases/latest')
+  .then((r) => (r.ok ? r.json() : null))
+  .then((d) => {
+    if (!d?.tag_name) return;
+    const v = d.tag_name.replace(/^v/, '');
+    document.querySelectorAll('[data-version]').forEach((el) => { el.textContent = `v${v}`; });
+    document.querySelectorAll('[data-zip]').forEach((el) => { el.textContent = `SkillHanger-${v}.zip`; });
+  })
+  .catch(() => {});
