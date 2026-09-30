@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkillHanger — Every skill, on tap</title>
+  <meta name="description" content="A free, open-source native Mac app for Claude Code and Codex. Find skills and plugins, see your usage limits, and keep your Mac awake while your agent works.">
+  <link rel="canonical" href="https://skillhanger.is-a.dev/">
+  <meta name="theme-color" content="#1A0E12">
+  <link rel="icon" type="image/png" href="assets/img/skillhanger-logo.png">
+  <link rel="apple-touch-icon" href="assets/img/skillhanger-logo.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SkillHanger">
+  <meta property="og:title" content="SkillHanger — Every skill, on tap">
+  <meta property="og:description" content="Find better tools for your AI. See your limits. Keep work running. Free and open source for Mac.">
+  <meta property="og:url" content="https://skillhanger.is-a.dev/">
+  <meta property="og:image" content="https://skillhanger.is-a.dev/assets/img/social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://skillhanger.is-a.dev/assets/img/social-preview.png">
+
+  <link rel="preload" href="assets/fonts/Inter.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="assets/fonts/InstrumentSerif-Italic.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "SkillHanger",
+    "operatingSystem": "macOS 13+",
+    "applicationCategory": "DeveloperApplication",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "license": "https://opensource.org/licenses/MIT",
+    "url": "https://skillhanger.is-a.dev/",
+    "downloadUrl": "https://github.com/icarus2419/SkillHanger/releases/latest",
+    "codeRepository": "https://github.com/icarus2419/SkillHanger",
+    "image": "https://skillhanger.is-a.dev/assets/img/social-preview.png",
+    "description": "Find better tools for your AI. See your limits. Keep work running."
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="nav">
+    <div class="wrap nav-in">
+      <a class="brand" href="#top" aria-label="SkillHanger home">
+        <img src="assets/img/skillhanger-logo.png" width="28" height="28" alt="">
+        <span>SkillHanger</span>
+      </a>
+      <nav aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#tour">Tour</a>
+        <a href="#ads">Ads</a>
+        <a href="#install">Install</a>
+        <a href="#privacy">Privacy</a>
+      </nav>
+      <a class="btn btn-ghost btn-sm" href="https://github.com/icarus2419/SkillHanger">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="wrap hero-in">
+        <div class="hero-copy">
+          <p class="eyebrow">SkillHanger <i>·</i> Free for Mac <i>·</i> MIT</p>
+          <h1 class="display">Every skill, <em>on tap.</em></h1>
+          <p class="lead">Find better tools for your AI. See your limits. Keep work running. A free, open-source native Mac app for people who work with Claude Code and Codex.</p>
+          <div class="ctas">
+            <a class="btn btn-primary" href="https://github.com/icarus2419/SkillHanger/releases/latest">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Download for Mac
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/icarus2419/SkillHanger">View on GitHub</a>
+          </div>
+          <p class="meta">macOS 13+ <i>·</i> Claude Code + Codex <i>·</i> Native Swift</p>
+        </div>
+
+        <div class="hero-stage" aria-hidden="true">
+          <div class="hud">
+            <span>SKILLHANGER&nbsp;&nbsp;MARK 01</span>
+            <span class="hud-r"><b class="dots"><i></i><i></i><i></i><i></i></b> DRAG TO SPIN</span>
+          </div>
+          <img class="logo-fallback" src="assets/img/skillhanger-logo.png" width="176" height="176" alt="">
+          <canvas id="logo3d"></canvas>
+          <div class="floor"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+      <div class="wrap">
+        <p class="eyebrow">Skills <i>·</i> Usage <i>·</i> Agent Awake</p>
+        <h2 class="display">Three jobs, <em>one window.</em></h2>
+        <p class="sub">Coding with an AI assistant means more than writing prompts. You need useful tools, enough allowance to finish, and a Mac that stays awake while a long task runs.</p>
+
+        <div class="cards">
+          <article class="card card-cream">
+            <p class="tag">01 <i>·</i> Skill Library</p>
+            <h3>Discover skills <em>&amp;&nbsp;plugins.</em></h3>
+            <p>Search a library of GitHub packages for coding, design, testing, documents and more. Review the publisher and source, then install for Codex or Claude Code.</p>
+            <figure class="shot"><img src="assets/img/skill-library-dark.png" width="1180" height="820" loading="lazy" alt="SkillHanger's Skill Library with searchable skills, categories, and install controls"></figure>
+          </article>
+
+          <article class="card card-crimson">
+            <div class="brackets"><span>USAGEBAR</span><span>SESSION · WEEKLY</span></div>
+            <p class="slam">SEE<br>YOUR<br><span>LIMITS.</span></p>
+            <p>Session and weekly limits, reset times, and how fresh each reading is. Two small batteries sit on your desktop and in the menu bar.</p>
+            <figure class="shot"><img src="assets/img/usage-dark.png" width="1600" height="1112" loading="lazy" alt="Usage page showing session and weekly limits"></figure>
+          </article>
+
+          <article class="card card-burgundy">
+            <p class="tag">03 <i>·</i> Agent Awake</p>
+            <h3>Keep work <em>running.</em></h3>
+            <p>Prevent idle sleep while a monitored task runs. When tasks wait or finish, normal sleep comes back. Follow working, waiting, finished and interrupted sessions.</p>
+            <figure class="shot"><img src="assets/img/awake-dark.png" width="1600" height="1112" loading="lazy" alt="Agent Awake page with sleep protection controls"></figure>
+          </article>
+        </div>
+
+        <ul class="minis">
+          <li><b>Manage what's installed</b><span>Open settings, copy an invocation, disable or remove supported packages.</span></li>
+          <li><b>Make it fit your desktop</b><span>Light or dark. Widget size, layout, colors, opacity, position, locking.</span></li>
+          <li><b>Keyboard first</b><span><kbd>⌘1</kbd>–<kbd>⌘6</kbd> pages, <kbd>⌘F</kbd> search, <kbd>⌘R</kbd> refresh, <kbd>⌘,</kbd> settings.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- TOUR -->
+    <section class="section" id="tour">
+      <div class="wrap">
+        <p class="eyebrow">Tour <i>·</i> Preview mode <i>·</i> Sample data</p>
+        <h2 class="display">Have <em>a look around.</em></h2>
+        <div class="tour">
+          <div class="tabs" role="tablist" aria-label="App screens">
+            <button role="tab" aria-selected="true" data-src="assets/img/skill-library-dark.png" data-w="1180" data-h="820" data-alt="Skill Library">Library</button>
+            <button role="tab" aria-selected="false" data-src="assets/img/overview-dark.png" data-w="1600" data-h="1112" data-alt="Overview page">Overview</button>
+            <button role="tab" aria-selected="false" data-src="assets/img/usage-dark.png" data-w="1600" data-h="1112" data-alt="Usage page">Usage</button>
+            <button role="tab" aria-selected="false" data-src="assets/img/awake-dark.png" data-w="1600" data-h="1112" data-alt="Agent Awake page">Agent Awake</button>
+            <button role="tab" aria-selected="false" data-src="assets/img/activity-dark.png" data-w="1600" data-h="1112" data-alt="Activity page">Activity</button>
+            <button role="tab" aria-selected="false" data-src="assets/img/widget-dark.png" data-w="1600" data-h="1112" data-alt="Floating widget settings">Widget</button>
+          </div>
+          <figure class="tour-view" role="tabpanel">
+            <img id="tourImg" src="assets/img/skill-library-dark.png" width="1180" height="820" loading="lazy" alt="Skill Library">
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADS -->
+    <section class="section" id="ads">
+      <div class="wrap">
+        <p class="eyebrow">SkillHanger <i>·</i> TikTok <i>·</i> 1080×1920 <i>·</i> 15 s</p>
+        <h2 class="display">Two ads, <em>one logo moment.</em></h2>
+        <p class="sub">Press play with sound on. Both end on the same particle-to-3D logo reveal. The music and effects are real recorded instruments and foley.</p>
+        <div class="ads">
+          <figure class="ad ad-cream">
+            <video controls playsinline preload="none" poster="assets/video/01-is-it-skilled.jpg" src="assets/video/01-is-it-skilled.mp4" aria-label="Ad 1: Is it skilled?"></video>
+            <figcaption><span>01</span> Is it skilled? <i>·</i> 120 BPM</figcaption>
+          </figure>
+          <figure class="ad ad-crimson">
+            <video controls playsinline preload="none" poster="assets/video/02-every-skill-on-tap.jpg" src="assets/video/02-every-skill-on-tap.mp4" aria-label="Ad 2: Every skill. On tap."></video>
+            <figcaption><span>02</span> Every skill. On tap. <i>·</i> 128 BPM</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSTALL -->
+    <section class="section" id="install">
+      <div class="wrap">
+        <p class="eyebrow">Install <i>·</i> macOS 13+ <i>·</i> Free</p>
+        <h2 class="display">Up and running <em>in a minute.</em></h2>
+        <ol class="steps">
+          <li><span class="n">01</span><b>Download</b><p>Grab the latest <code>SkillHanger-x.y.z.zip</code> from <a href="https://github.com/icarus2419/SkillHanger/releases/latest">Releases</a>.</p></li>
+          <li><span class="n">02</span><b>Unzip &amp; drag</b><p>Move SkillHanger into your Applications folder.</p></li>
+          <li><span class="n">03</span><b>Open it</b><p>It isn't notarized yet, so the first time: <b>right-click → Open → Open</b>.</p></li>
+        </ol>
+
+        <div class="term">
+          <div class="term-bar"><i></i><i></i><i></i><span>Build from source · Swift 6</span><button class="copy" type="button" data-copy="git clone https://github.com/icarus2419/SkillHanger.git&#10;cd SkillHanger&#10;make app&#10;open dist/SkillHanger.app">Copy</button></div>
+<pre><code><span class="c">$</span> git clone https://github.com/icarus2419/SkillHanger.git
+<span class="c">$</span> cd SkillHanger
+<span class="c">$</span> make app
+<span class="c">$</span> open dist/SkillHanger.app</code></pre>
+        </div>
+        <p class="note">Sign in to Claude Code, or to Codex with a ChatGPT account, to see your plan limits. SkillHanger reads the login your assistant already stored, so you never paste an API key into it.</p>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section class="section" id="privacy">
+      <div class="wrap privacy">
+        <div>
+          <p class="eyebrow">Privacy <i>·</i> Permissions</p>
+          <h2 class="display">Metadata, <em>not your prompts.</em></h2>
+        </div>
+        <ul class="checks">
+          <li>Usage checks read your existing local login and ask the provider for allowance metadata only. They don't run inference or spend tokens.</li>
+          <li>Saved usage and task records hold metadata. Prompts, transcripts, and responses are never stored.</li>
+          <li>Browsing and installing packages contacts GitHub. Being in the catalog doesn't mean a package has been audited.</li>
+          <li>Provider hooks, service connections, and the closed-lid helper always need your approval.</li>
+          <li>Name conflicts and edited skill files are protected. Removed standalone skills go to the Trash.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- CLOSER -->
+    <section class="closer">
+      <div class="wrap">
+        <div class="closer-card">
+          <p class="eyebrow">Open source <i>·</i> MIT</p>
+          <h2 class="display">Free for Mac. <em>Forever.</em></h2>
+          <div class="ctas">
+            <a class="btn btn-ink" href="https://github.com/icarus2419/SkillHanger/releases/latest">Download for Mac</a>
+            <a class="btn btn-ghost-ink" href="https://github.com/icarus2419/SkillHanger">Star on GitHub</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <p class="wordmark" aria-hidden="true">SkillHanger</p>
+      <div class="foot-row">
+        <nav aria-label="Footer">
+          <a href="https://github.com/icarus2419/SkillHanger">GitHub</a>
+          <a href="https://github.com/icarus2419/SkillHanger/releases">Releases</a>
+          <a href="https://github.com/icarus2419/SkillHanger/blob/main/LICENSE">License</a>
+          <a href="https://github.com/icarus2419/SkillHanger/blob/main/SECURITY.md">Security</a>
+          <a href="https://github.com/icarus2419/SkillHanger/blob/main/CONTRIBUTING.md">Contributing</a>
+        </nav>
+        <p>MIT licensed. Not affiliated with Anthropic or OpenAI.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "./assets/vendor/three.module.min.js",
+      "three/addons/": "./assets/vendor/jsm/"
+  } }
+  </script>
+  <script src="site.js" defer></script>
+  <script type="module" src="logo.js"></script>
+</body>
+</html>
